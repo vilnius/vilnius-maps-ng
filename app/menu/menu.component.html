@@ -1,0 +1,76 @@
+<div id="menu-top" class="animate mobile-menu" [class.mobile-active]="mobileActive" (click)="activateMenuBtn()">
+  <i class="fa fa-navicon" aria-hidden="true"></i>
+  <a class="button close animate" (click)="closeToggle()" title="Uždaryti" *ngIf="mobileActive">✕</a>
+</div>
+
+<!--Navigation content-->
+<menu-themes id="theme" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-themes>
+<menu-layers-itv *ngIf="themeName==='projektai'" id="layers" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-layers-itv>
+<menu-layers *ngIf="themeName!=='projektai'" id="layers" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-layers>
+<menu-legend-itv *ngIf="themeName==='projektai'" [viewLegend]="view" id="legend" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-legend-itv>
+<menu-legend *ngIf="themeName!=='projektai'" [viewLegend]="view" id="legend" class="sub-menu module animate color-layers default-legend" [class.mobile-active]="mobileActive"></menu-legend>
+<menu-tools (close)=onClose($event) id="tools" [viewTools]="view" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-tools>
+<div id="open-data" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive">
+  <p>Atviri duomenys / Open data:</p>
+  <a (click)="closeToggle()" class="button close animate" title="Uždaryti">✕</a>
+  <div class="inner">
+    <p>GIS atvirų duomenų tinklalapyje skelbiami (su galimybe peržiūrėti ir atsisiųsti) vieši Vilniaus miesto savivaldybės GIS duomenys. Duomenis galite atsisiųsti .csv, .kml, .shp formatais.</p>
+    <p><a href="http://gis.opendata.lt/" target="_blank">www.gis.opendata.lt</a></p>
+  </div>
+  <div id="tools-measure"></div>
+</div>
+<!--End Navigation content-->
+
+<!-- top menu -->
+<div class="modes" [class.active-tools]="toolsActive">
+  <div id="top-menu" class="top-nav maps-nav col app animate col5 bottom small pad4x dark fill-denim animate" [class.mobile-active]="mobileActive">
+    <a id="menu-theme"  class="cell line-right button nav-menu icon big" (click)="targetTheme()"><i class="fa fa-th" aria-hidden="true"></i>Temos</a>
+    <a id="menu-layers" class="cell line-right button nav-menu icon big animate" (click)="targetLayers()"><i class="fa fa-list"></i> Sluoksniai</a>
+    <a id="menu-legend" class="cell pad1y button hide-mobile nav-menu line-right col4 icon paint animate" (click)="targetLegend()"><i class="fa fa-th-large"></i> Žymėjimas </a>
+    <a id="menu-tools" class="cell pad1y button nav-menu hide-mobile line-right col4 icon animate" (click)="targetTools()"><i class="fa fa-cog"></i> Įrankiai</a>
+    <a id="menu-open-data" class="cell pad1 button nav-menu hide-mobile col4 icon animate" (click)="targetOpenData()">Atviri duomenys</a>
+  </div>
+  <div id="menu-wrapper" [class.active-wrapper]="mobileActive"  (click)="activateMenuBtn()"></div>
+</div>
+<!-- end top menu -->
+
+<!-- sub layer list for all layers -->
+<!-- <div class="sub-layers-container" *ngIf="subLayersActive"> -->
+<div class="sub-layers-container" [class.sublist-off]="!subLayersActive">
+<span id="close-filter" (click)="toggleSubState()">
+  <svg xml:space="preserve" xmlns:xlink="http://www.w3.org/1999/xlink" height="612px" style="enable-background:new 0 0 612 612;" version="1.1" viewBox="0 0 612 612" width="612px" x="0px" xmlns="http://www.w3.org/2000/svg" y="0px">
+  <g>
+    <g id="cross">
+        <g>
+            <polygon points="612,36.004 576.521,0.603 306,270.608 35.478,0.603 0,36.004 270.522,306.011 0,575.997 35.478,611.397      306,341.411 576.521,611.397 612,575.997 341.459,306.011    "></polygon>
+        </g>
+      </g>
+    </g>
+    </svg>
+  </span>
+  <h3>Papildomi visų temų sluoksniai</h3>
+  <div id="sub-layers-content-list"></div>
+
+</div>
+
+<!-- sub layer list info -->
+<div id="sub-layer-list" *ngIf="visibleSubLayerNumber;">
+  <div class="count">{{visibleSubLayerNumber}}</div>
+  <div class="explain">
+    Šiuo metu aktyvūs <br>
+    <div *ngIf="subLayersActive; then inactiveList;"></div>
+    <ng-template  #inactiveList>papildomi sluoksniai</ng-template>
+    <div  *ngIf="!subLayersActive" (click)="toggleSubState()" class="sub-layers-inactive"><a>papildomi sluoksniai</a></div>
+  </div>
+<span id="close-filter" (click)="closeSubListHelp()">
+  <svg xml:space="preserve" xmlns:xlink="http://www.w3.org/1999/xlink" height="612px" style="enable-background:new 0 0 612 612;" version="1.1" viewBox="0 0 612 612" width="612px" x="0px" xmlns="http://www.w3.org/2000/svg" y="0px">
+    <g>
+      <g id="cross">
+        <g>
+          <polygon points="612,36.004 576.521,0.603 306,270.608 35.478,0.603 0,36.004 270.522,306.011 0,575.997 35.478,611.397      306,341.411 576.521,611.397 612,575.997 341.459,306.011    "></polygon>
+        </g>
+      </g>
+    </g>
+    </svg>
+  </span>
+</div>

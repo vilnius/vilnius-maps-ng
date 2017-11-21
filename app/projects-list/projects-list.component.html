@@ -1,0 +1,140 @@
+<h3>Investicinių projektų filtravimas:</h3>
+
+<div class="filters-container animate" *ngIf="buttonActive" [class.filters-active]="buttonActive">
+
+  <div class="filter-detail">
+    Detalus filtravimas:
+    <span id="close-filter" (click)="buttonActive = !buttonActive">
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" width="612px" height="612px" viewBox="0 0 612 612" style="enable-background:new 0 0 612 612;" xml:space="preserve">
+    <g>
+    	<g id="cross">
+    		<g>
+    			<polygon points="612,36.004 576.521,0.603 306,270.608 35.478,0.603 0,36.004 270.522,306.011 0,575.997 35.478,611.397      306,341.411 576.521,611.397 612,575.997 341.459,306.011    "/>
+    		</g>
+    	</g>
+    </g>
+    </svg>
+  </span>
+  </div>
+
+  <div *ngIf="projectsThemes" class="filter-theme">
+    <label for="projects">Tema</label> <br>
+    <div class="checkbox" *ngFor="let theme of projectsThemes">
+      <input type="checkbox" value="" id="{{theme}}">
+      <label class="label-style animate" [class.active]="!activeTheme[theme.toString()]" for="{{theme}}" [ngSwitch]="theme" (click)=filterFeatures(theme)>
+        <span class="n{{theme}}-theme projects-theme"></span>
+        <span *ngSwitchCase="1" class="theme-name">Kultūra</span>
+        <span *ngSwitchCase="2" class="theme-name">Švietimas</span>
+        <span *ngSwitchCase="3" class="theme-name">Sveikatos apsauga</span>
+        <span *ngSwitchCase="4" class="theme-name">Socialinė infrastruktūra</span>
+        <span *ngSwitchCase="5" class="theme-name">Susisiekimo infrastruktūra</span>
+        <span *ngSwitchCase="6" class="theme-name">Parkai ir viešosios erdvės</span>
+        <span *ngSwitchCase="7" class="theme-name">Traukos centrai</span>
+        <span *ngSwitchCase="8" class="theme-name">Aplinkosauga</span>
+        <span *ngSwitchCase="9" class="theme-name">Viešasis valdymas</span>
+        <span *ngSwitchCase="10" class="theme-name">Turizmas</span>
+        <span *ngSwitchDefault>Nenustatyta tema</span>
+  </label>
+    </div>
+  </div>
+
+  <div *ngIf="projectsFinalYears" class="filter-year">
+    <label for="year">Užbaigimo metai</label> <br>
+    <div class="checkbox" *ngFor="let year of projectsFinalYears">
+      <input type="checkbox" value="" id="{{year}}">
+      <label class="label-style animate" [class.active]="!activeYear[year]" for="{{year}}" (click)=filterYear(year)>
+        <span></span>
+        <span>{{year}} m.</span>
+      </label>
+    </div>
+  </div>
+</div>
+
+<div id="filters-button">
+  <button type="button" name="button" (click)="buttonActive = !buttonActive" class="animate" [class.button-active]="buttonActive">
+    <svg class="animate" xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50">
+        <path d="M 4.84375 12.90625 L 2.75 15 L 25 37.25 L 47.25 15 L 45.15625 12.90625 L 25 33.0625 L 4.84375 12.90625 z"></path>
+    </svg>
+    Detalus filtravimas
+    <span *ngIf="activatedFiltersNumber > 0" class="badge filters-badge">
+      {{activatedFiltersNumber}}
+    </span>
+  </button>
+</div>
+
+<div class="filter-detail main">
+  Pagrindinis filtravimas:
+  <form ngForm action="">
+    <div class="radio">
+      <label>
+        <input type="radio" name="wordFilter" id="optionsRadios2" [(ngModel)]="mainFilterCheck"  value="word" (change)="change($event)">
+        <h6>Pagal raktinį žodį:</h6>
+      </label>
+      <label>
+          <input type="radio" name="mapFilter" id="optionsRadios1" [(ngModel)]="mainFilterCheck" value="map" (change)="change($event)">
+          <h6>Pagal žemėlapio aprėptį</h6>
+      </label>
+    </div>
+  </form>
+</div>
+
+<div *ngIf="!projectsList" style="width: 20px; margin: 40px auto">
+  <img style="width: 20px;" src="app/img/ajax-loader.gif">
+</div>
+
+<div *ngIf="projectsList">
+  <div *ngIf="mainFilterCheck == 'map'">
+    <h4>Rezultatai pagal žemėlapį:
+      <span class="badge">
+        {{projectsList.length}}
+      </span>
+    </h4>
+    <ul class="projects-list">
+      <li *ngFor="let project of projectsList" id="{{project.attributes.UNIKALUS_NR}}" class="animate"
+      (click)="identifyListItem($event, project)" (click)="activateList($event, 'map')"  [class.list-active]="mapListActive == project.attributes.UNIKALUS_NR ? true : false">
+        <span class="n{{project.attributes.TemaID}}-theme projects-theme"></span>
+        <span id="{{project.attributes.UNIKALUS_NR}}" class="project-name">{{project.attributes.Pavadinimas}}</span>
+      </li>
+      <p *ngIf="projectsList.length === 0">Nėra projektų <br>
+        <span class="filter-msg">
+          Pakoreguokite matomą žemėlapio zoną. <br>
+          Pakeiskite detaliojo filtravimo filtrus. <br>
+          Nutolinkite vaizdą žemėlapyje.
+        </span>
+      </p>
+    </ul>
+  </div>
+</div>
+
+<div *ngIf="fullListChanged">
+  <div *ngIf="mainFilterCheck == 'word'">
+    <h4>Rezultatai pagal žodį:
+      <span class="badge">
+        {{fullListChanged.length}}
+      </span>
+    </h4>
+    <div class="input-field col s12">
+      <input id="projects" type="text" class="validate filter-input form-control" [(ngModel)]="query" (keyup)="filter($event)" placeholder="Įrašykite žodį">
+    </div>
+    <div class="suggestions" *ngIf="filteredList.length > 0" [ngStyle]="{'display': 'none'}">
+      <ul>
+        <li *ngFor="let item of filteredList; let idx = index" [class.complete-selected]="idx == selectedIdx">
+          <a (click)="select(item)">{{item.attributes.Pavadinimas}}</a>
+        </li>
+      </ul>
+    </div>
+
+    <ul class="projects-list">
+      <li *ngFor="let project of fullListChanged" id="{{project.attributes.UNIKALUS_NR}}" class="animate" (click)="identifyListItem($event, project)" (click)="activateList($event, 'word')"  [class.list-active]="wordListActive == project.attributes.UNIKALUS_NR ? true : false">
+        <span class="n{{project.attributes.TemaID}}-theme projects-theme"></span>
+        <span class="project-name" [innerHTML]="project.attributes.Pavadinimas | textHighlight: highlight"  id="{{project.attributes.UNIKALUS_NR}}"></span>
+      </li>
+      <p *ngIf="fullListChanged.length === 0">Nėra projektų<br>
+        <span class="filter-msg">
+          Pakoreguokite raktinį žodį. <br>
+          Pakeiskite detaliojo filtravimo filtrus.
+        </span>
+      </p>
+    </ul>
+  </div>
+</div>
