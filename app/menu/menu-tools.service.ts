@@ -28,7 +28,8 @@ export class MenuToolsService {
     });
   }
 
-  createAreaLabelGraphic(geometry, area) {
+  createAreaLabelGraphic(geometry, area, ended) {
+    const endString = ended ? "" : " (užbaigti dvigubu paspaudimu)";
     return new Graphic({
       geometry: geometry.centroid,
       symbol: {
@@ -36,7 +37,7 @@ export class MenuToolsService {
         color: "white",
         haloColor: "black",
         haloSize: "1px",
-        text: area.toFixed(4) + " km²",
+        text: area.toFixed(4) + " km²" + endString,
         xoffset: 3,
         yoffset: 3,
         font: { // autocast as Font
@@ -72,6 +73,6 @@ export class MenuToolsService {
   }
 
   addGeometryService(url) {
-    return  new GeometryService(url);
+    return new GeometryService(url);
   }
 }

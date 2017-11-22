@@ -147,9 +147,19 @@ export class MenuToolsComponent implements OnInit, AfterViewInit {
   }
 
   selectDrawEl(evt, id) {
-    //suspend layers toggle (e.g. suspend layers while drawing with measure tools)
-    this.mapService.suspendLayersToggle();
+    if (id === this.activeTool) {
+      this.activeTool = "";
+      this.resetTools();
+    } else {
+      //suspend layers toggle (e.g. suspend layers while drawing with measure tools)
+      this.mapService.suspendLayersToggle();
+      this.resetTools();
+      this.activateTool(id);
+      this.drawElement();
+    }
+  }
 
+  resetTools() {
     //reset eventHandler events
     this.removeEventHandlers();
 
@@ -157,8 +167,6 @@ export class MenuToolsComponent implements OnInit, AfterViewInit {
     this.calculatedUnits = null;
     this.measureButtonActive = false;
     this.view.graphics.removeAll();
-    this.activateTool(id);
-    this.drawElement();
   }
 
   //activate measure tools based on id
@@ -191,7 +199,7 @@ export class MenuToolsComponent implements OnInit, AfterViewInit {
     // listen to vertex-remove event on the action
     this.eventHandlers.push(action.on("vertex-remove", (e) => this.drawPolygon(e)));
     // listen to draw-complete event on the action
-    this.eventHandlers.push(action.on("draw-complete", (e) => { this.drawPolygon(e) }));
+    this.eventHandlers.push(action.on("draw-complete", (e) => { this.drawPolygon(e, true) }));
   }
 
   //ngClass workout
@@ -200,10 +208,10 @@ export class MenuToolsComponent implements OnInit, AfterViewInit {
   }
 
   //Label polyon with its area
-  labelAreas(geom, area) {
+  labelAreas(geom, area, ended) {
     this.calculatedUnits = area.toFixed(4) + " km²"
     //console.log("Geometry label", geom);
-    const graphic = this.menuToolsService.createAreaLabelGraphic(geom, area);
+    const graphic = this.menuToolsService.createAreaLabelGraphic(geom, area, ended);
     this.view.graphics.add(graphic);
   }
 
@@ -229,7 +237,7 @@ export class MenuToolsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  drawPolygon(evt) {
+  drawPolygon(evt, ended = false) {
     //on complete remove class
     this.deactivateAndDisable(evt);
 
@@ -261,7 +269,7 @@ export class MenuToolsComponent implements OnInit, AfterViewInit {
       }
     }
     // start displaying the area of the polygon
-    this.labelAreas(polygon, area);
+    this.labelAreas(polygon, area, ended);
   }
 
   closeToggle() {
@@ -298,11 +306,11 @@ export class MenuToolsComponent implements OnInit, AfterViewInit {
     // event to create a graphic when user double-clicks
     // on the view or presses the "C" key
     this.eventHandlers.push(action.on("draw-complete", (evt) => {
-      this.createPolylineGraphic(evt);
+      this.createPolylineGraphic(evt, true);
     }));
   }
 
-  createPolylineGraphic(evt) {
+  createPolylineGraphic(evt, ended = false) {
     this.deactivateAndDisable(evt);
 
     this.view.graphics.removeAll();
@@ -320,14 +328,15 @@ export class MenuToolsComponent implements OnInit, AfterViewInit {
     // calculate the area of the polygon
     let line = geometryEngine.planarLength(graphic.geometry, "kilometers");
     const lastIndex = polyline.paths.length - 1;
-    this.labelLinesAndPoints("line", polyline.paths[lastIndex], line);
+    this.labelLinesAndPoints("line", polyline.paths[lastIndex], line, ended);
   }
 
   //Label text
-  labelLinesAndPoints(geometryType: string, points, geometry = undefined) {
+  labelLinesAndPoints(geometryType: string, points, geometry = undefined, ended) {
     //this.calculatedUnits
+    const endString = ended ? "" : " (užbaigti dvigubu paspaudimu)";
     let text: string;
-    geometryType === "line" ? text = geometry.toFixed(3) + " km" : text = `x: ${points[0].toFixed(5)}, y: ${points[1].toFixed(5)}`;
+    geometryType === "line" ? text = geometry.toFixed(3) + " km" + endString : text = `x: ${points[0].toFixed(5)}, y: ${points[1].toFixed(5)}`;
     geometryType === "line" ? this.calculatedUnits = geometry.toFixed(3) + " km" : this.calculatedUnits = `x: ${points[0].toFixed(5)}, y: ${points[1].toFixed(5)}`
     const graphic = this.menuToolsService.createLineOrPointLabelGraphic(points, text, this.view);
     this.view.graphics.add(graphic);

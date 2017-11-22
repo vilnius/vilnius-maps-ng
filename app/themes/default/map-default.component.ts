@@ -82,7 +82,7 @@ export class MapDefaultComponent implements OnInit {
     const visibleLayersIds: number[] = ids.identificationsIds;
     const checkedLayersIds: number[] = ids.visibilityIds;
     //check if there is any visible layers that can be identied in allLayers group
-    let  identify = ids.identificationsIds.allLayers.length === 0 ? "" : "allLayers";
+    let  identify = ids.identificationsIds.allLayers.length <= 1 ? "" : "allLayers";
     //console.log("ids", ids)
 
     //get share url
