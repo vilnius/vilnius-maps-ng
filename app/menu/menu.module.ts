@@ -6,11 +6,13 @@ import { MenuComponent }  from './menu.component';
 import { MenuLayersItvComponent, MenuSubLayersComponent, MenuLayersComponent, MenuLegendItvComponent, MenuLegendComponent, MenuToolsComponent, MenuThemesComponent } from '../menu';
 import { MenuService }  from './menu.service';
 
-import { Draggable } from 'ng2draggable';
+import { NgDraggableModule } from 'angular-draggable';
 
 @NgModule({
   imports: [
-    CommonModule, FormsModule
+    CommonModule, FormsModule,
+    //3rd party declarations
+    NgDraggableModule
   ],
   declarations: [
     MenuComponent,
@@ -18,9 +20,7 @@ import { Draggable } from 'ng2draggable';
     MenuToolsComponent,
     MenuSubLayersComponent,
     MenuLayersItvComponent, MenuLayersComponent,
-    MenuLegendItvComponent, MenuLegendComponent,
-    //3rd party declarations
-    Draggable
+    MenuLegendItvComponent, MenuLegendComponent
   ],
   exports: [MenuComponent],
   providers: [MenuService]
