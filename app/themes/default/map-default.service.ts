@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Http, Response } from '@angular/http';
+//import { Http, Response } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/dom/ajax';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
-import {Subject} from 'rxjs/Subject';
+import { Subject } from 'rxjs/Subject';
 
 import { MapOptions } from '../../options';
 import { MapService } from '../../map.service';
@@ -28,7 +29,7 @@ export class MapDefaultService {
 
   visibleSubLayerNumber: number = 0;
 
-  constructor(private http: Http, private mapService: MapService) { }
+  constructor(private http: HttpClient, private mapService: MapService) { }
 
   getUrls(): string[] {
     return this.urlArray;
@@ -116,7 +117,13 @@ export class MapDefaultService {
             } else {
               attributeResult = "-";
             }
-            content += "<p><span>" + resultAtr + "</br></span>" + attributeResult + "<p>";
+            //check if url contains http or https  + :// string with regex, TODO refactor
+            if (attributeResult.match("^https?://", "i")) {
+              content += `<p><span>${resultAtr}</br></span><a href='${attributeResult}' target='_blank'>${attributeResult}</a><p>`;
+            } else {
+              content += "<p><span>" + resultAtr + "</br></span>" + attributeResult + "<p>";
+            }
+
           }
         } else if (resultAtr == "Class value" || resultAtr == "Pixel Value") {
           //TEMP check for raster properties 	and add custom msg

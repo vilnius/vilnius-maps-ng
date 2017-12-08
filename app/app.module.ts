@@ -1,8 +1,7 @@
 import { NgModule }      from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { HttpModule, JsonpModule } from '@angular/http';
-
+import {HttpClientModule} from '@angular/common/http';
 import { MapComponent } from './map.component';
 import { MapDefaultComponent } from './themes';
 import { ThemesComponent } from './themes.component';
@@ -34,8 +33,9 @@ import { MaterialModule } from '@angular/material';
   imports: [
     BrowserModule,
     FormsModule,
-    HttpModule,
-    JsonpModule,
+    // HttpModule,
+    // JsonpModule,
+    HttpClientModule,
     Routing,
     BrowserAnimationsModule,
     //Appliaction custom modules

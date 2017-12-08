@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http, Response } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/dom/ajax';
@@ -83,7 +83,7 @@ export class MapService {
   //all layers for "allLayers"
   subDynamicLayers: any;
 
-  constructor(private http: Http, private projectsService: ProjectsListService) { }
+  constructor(private http: HttpClient, private projectsService: ProjectsListService) {}
 
   initMap(options: Object): Map {
     //return new Map(options);
@@ -164,17 +164,17 @@ export class MapService {
 
   //suspend layers toggle (e.g. suspend layers while drawing with measure tools), define boolean type value, isntead of  this.suspendedIdentitication = !this.suspendedIdentitication
   suspendLayersToggle() {
-      this.suspendedIdentitication = true;
-      //console.log(this.suspendedIdentitication);
+    this.suspendedIdentitication = true;
+    //console.log(this.suspendedIdentitication);
   }
 
   unSuspendLayersToggle() {
-      this.suspendedIdentitication = false;
-      //console.log(this.suspendedIdentitication);
+    this.suspendedIdentitication = false;
+    //console.log(this.suspendedIdentitication);
   }
 
   getSuspendedIdentitication() {
-      return this.suspendedIdentitication;
+    return this.suspendedIdentitication;
   }
 
   //for default themes
@@ -305,31 +305,68 @@ export class MapService {
     });
   }
 
-  //count REST layers and only if it's not grouped (not implemented)
-  countRestlayers(url: string) {
-    return this.http.get(url)
-      .map(this.getData)
-      .catch(this.handleError);
+  //http fetch for default themes
+  fetchRequest(url: string) {
+    return this.http.get(url + "/layers?f=pjson")
   }
 
-  getData(res: Response) {
-    let jsonResponse = res.json();
-    //console.log("jsonResponse", jsonResponse);
-    return jsonResponse;
+  //http fetch for projects themes
+  fetchRequestProjects(url: string) {
+    return this.http.get(url + "?f=pjson")
   }
 
-  private handleError(error: Response | any) {
-    // In a real world app, we might use a remote logging infrastructure
-    let errMsg: string;
-    if (error instanceof Response) {
-      const body = error.json() || '';
-      const err = body.error || JSON.stringify(body);
-      errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-    } else {
-      errMsg = error.message ? error.message : error.toString();
-    }
-    console.error(errMsg);
-    return Observable.throw(errMsg);
+  //projcets theme add features to mapPoint
+  addFeaturesToMap() {
+    //count feature layers and add to map
+    return this.fetchRequestProjects(MapOptions.themes.itvTheme.layers.mapLayer).subscribe(json => {
+      //console.log("json", json)
+      const layersCount = json.layers.length;
+      //create layers arr
+      const featureLayerArr = this.createFeatureLayers(layersCount, MapOptions.themes.itvTheme.layers.mapLayer);
+      return featureLayerArr;
+    });
+  }
+
+  addToMap(response, queryParams){
+    response.subscribe(json => {
+      //console.log("json", json);
+      //jus create sub Layers array for allLayers
+      const sublayersArray = this.getSubDynamicLayerSubLayers(json.layers);
+
+      //create layer and empty the sublayers object if this.queryParams allayers prop is not set
+      let subLayers = [];
+      if (queryParams.allLayers && (queryParams.identify === "allLayers")) {
+        subLayers = sublayersArray;
+      };
+      const layer = this.initSubAllDynamicLayers(MapOptions.mapOptions.staticServices.commonMaps, "allLayers", "Visų temų sluoksniai", 0.8, subLayers);
+      this.map.add(layer);
+
+      //check other url params if exists
+      //activate layer defined in url query params
+      this.activateLayersVisibility(this.view, queryParams, this.map);
+    });
+  }
+
+  pickMainThemeLayers(response, layer, key, queryParams) {
+    response.subscribe(json => {
+      //add dyn layers
+      //console.log("snapshotUrl", snapshotUrl.path);
+      let sublayersArray = this.getSubDynamicLayerSubLayers(json.layers);
+      let dynamicLayer = this.initDynamicLayer(layer.dynimacLayerUrls, key, layer.name, layer.opacity, sublayersArray)
+      //for Layerlist 4.4 API bug fix
+      this.map.add(dynamicLayer);
+
+      //check other url params if exists
+      //activate layer defined in url query params
+      this.activateLayersVisibility(this.view, queryParams, this.map);
+
+      //check for type raster and push to array
+      json.layers.forEach((layer) => {
+        if (layer.type === "Raster Layer") {
+          this.rasterLayers.push(layer.name);
+        }
+      })
+    });
   }
 
   createFeatureLayers(layersNumber: number, url: String) {

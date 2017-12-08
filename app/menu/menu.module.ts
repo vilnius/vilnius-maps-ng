@@ -2,15 +2,16 @@ import { NgModule }      from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule }        from '@angular/forms';
 
+import { MenuService }  from './menu.service';
 import { MenuComponent }  from './menu.component';
 import { MenuLayersItvComponent, MenuSubLayersComponent, MenuLayersComponent, MenuLegendItvComponent, MenuLegendComponent, MenuToolsComponent, MenuThemesComponent } from '../menu';
-import { MenuService }  from './menu.service';
 
 import { NgDraggableModule } from 'angular-draggable';
 
 @NgModule({
   imports: [
-    CommonModule, FormsModule,
+    CommonModule,
+    FormsModule,
     //3rd party declarations
     NgDraggableModule
   ],

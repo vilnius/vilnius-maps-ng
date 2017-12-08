@@ -24,13 +24,15 @@ import { MapOptions } from '../options';
     `
 })
 
-export class MenuSubLayersComponent implements OnInit {
+export class MenuSubLayersComponent {
 
-  state: boolean = false;
+  state = false;
 
-  constructor(private mapService: MapService, private mapDefaultService: MapDefaultService, private menuService: MenuService, private identify: IdentifyService) {
-
-  }
+  constructor(
+    private mapService: MapService,
+    private mapDefaultService: MapDefaultService,
+    private menuService: MenuService,
+    private identify: IdentifyService) {}
 
   toggleSubState() {
     const subLayersSate = this.menuService.getSubLayersState();
@@ -39,13 +41,9 @@ export class MenuSubLayersComponent implements OnInit {
     if (!subLayersSate) {
       //change subLayersState (only on first init)
       this.menuService.setSubLayersState();
-
       const allLayerGroup = this.mapService.getAllLayers();
-      console.log(subLayersSate);
       const map = this.mapService.returnMap();
       const layer = map.findLayerById("allLayers");
-      console.log(layer);
-      console.log(layer);
       layer.sublayers = allLayerGroup;
     }
 
@@ -58,22 +56,5 @@ export class MenuSubLayersComponent implements OnInit {
     }
 
     this.state = this.menuService.getSubState();
-    //console.log(this.state);
-    console.log("view", this.mapService.getView());
-
-    //remove allLayers with following built in eventHandlers
-    // if (!this.state) {
-    //   //empty sublayers
-    //   layer.sublayers = [];
-    //   layer.suspended = true;
-    //   //map.removeAll();
-    // }
-  }
-
-  ngOnInit() {
-    //let map = this.mapService.returnMap();
-    //don't show all layers ir main layerlist
-    //UPDATE hide dom instead
-    //map.layers.items = this.menuService.listModeSelection("theme", map.layers.items);
   }
 }

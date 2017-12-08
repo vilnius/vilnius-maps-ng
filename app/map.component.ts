@@ -49,7 +49,7 @@ export class MapComponent implements OnInit, OnDestroy {
   view: any;
   search: any;
   mobile: boolean;
-  featureLayers: any[];
+  featureLayers: any;
 
   helpContainerActive: boolean = false;
   shareContainerActive: boolean = false;
@@ -251,16 +251,8 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   addFeaturesToMap() {
-    //count feature layers and add to map
-    this._mapService.countRestlayers(MapOptions.themes.itvTheme.layers.mapLayer + "?f=pjson").subscribe(json => {
-      //console.log("json", json)
-      let layersCount = json.layers.length;
-      //creat layers arr
-      let featureLayerArr = this._mapService.createFeatureLayers(layersCount, MapOptions.themes.itvTheme.layers.mapLayer);
-      this.featureLayers = featureLayerArr;
-      //add layers
-      //this.map.addMany(featureLayerArr);
-    });
+    const featureLayerArr = this._mapService.addFeaturesToMap();
+    this.featureLayers = featureLayerArr;
   }
 
   ngOnInit() {
