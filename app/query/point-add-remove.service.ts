@@ -51,7 +51,7 @@ export class PointAddRemoveService {
     this._mapService.selectionResultsToGraphic(map, feature, layer["0"].maxScale, layer["0"].minScale, layer, number);
   }
 
-  //selection on poin, polygon or polyline
+  //selection on point, polygon or polyline
   showSelectionGraphicCommon(feature, map, view, projectsLayer, number, geometryTypes) {
     //console.log("projectsLayer", projectsLayer);
     let layer = projectsLayer.sublayers.items.filter(layer => {

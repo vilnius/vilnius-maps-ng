@@ -102,7 +102,7 @@ export class MapDefaultService {
     for (let resultAtr in attributes) {
       if (attributes.hasOwnProperty(resultAtr)) {
         //Filter specific string values
-        if (!(resultAtr == "OBJECTID" || resultAtr == "layerName" || resultAtr.match(/shape/i) || resultAtr == "Class value" || resultAtr == "Pixel Value" || resultAtr.match(/count/i) //TEMP check for raster and other str properties, use match case insensitive where possible
+        if (!(resultAtr.toLowerCase() == "objectid" || resultAtr == "layerName" || resultAtr.match(/shape/i) || resultAtr == "Class value" || resultAtr == "Pixel Value" || resultAtr.match(/count/i) //TEMP check for raster and other str properties, use match case insensitive where possible
         )) { //add layers attributes that you do not want to show
           //AG check for date string
           if (this.isValidDate(attributes[resultAtr], reg)) {

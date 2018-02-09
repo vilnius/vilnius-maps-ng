@@ -1,8 +1,9 @@
-import { Component, OnInit, Input, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ElementRef, ViewChild, Renderer2 } from '@angular/core';
 import { ActivatedRoute, Params } from "@angular/router";
+import { trigger, state, style, animate, transition } from '@angular/animations';
 
 import { MapService } from '../../map.service';
-import { MapDefaultService } from './map-default.service';
+import { MapDefaultService } from '../default/map-default.service';
 import { ProjectsListService } from '../../projects-list/projects-list.service';
 import { SearchService } from '../../search/search.service';
 import { MapWidgetsService } from '../../map-widgets/map-widgets.service';
@@ -13,7 +14,6 @@ import { ProjectsListComponent } from '../../projects-list/projects-list.compone
 import { ScaleAndLogoComponent } from '../../map-widgets/scale-and-logo.component';
 import { CreditsCompponent } from '../../map-widgets/credits.component';
 import { ProjectsGalleryComponent } from '../../gallery/projects-gallery.component';
-import { CommonWidgetsComponent } from '../../common-widgets.component';
 
 import watchUtils = require("esri/core/watchUtils");
 import on = require("dojo/on");
@@ -33,10 +33,79 @@ import { pick } from 'lodash';
 import { forIn } from 'lodash';
 
 @Component({
-  selector: 'esri-map-default',
-  templateUrl: './app/themes/default/map-default.component.html'
+  selector: 'esri-map-buildings',
+  templateUrl: './app/themes/buildings/map-buildings.component.html',
+  styles: [`
+    sidebar-map {
+      position: absolute;
+      height: 100%;
+    }
+    sidebar-map p {
+      padding: 6px 20px;
+      line-height: 34px;
+      letter-spacing: -.4px;
+    }
+    .button.close.build-close {
+      padding: 14px 16px;
+      height: 46px;
+      width: 50px;
+      overflow-y: hidden;
+    }
+    .button.close {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: #A80C0D;
+      font-size: 20px;
+      color: #fff;
+      border-radius: 0;
+    }
+    .button.close .fa {
+        padding: 0;
+    }
+    .buldings-tooltip {
+      max-width: 120px;
+      width: auto;
+      position: absolute;
+      background-color:  #fff;
+      border-radius: 2px;
+      font-size: 14px;
+      -moz-border-radius: 2px;
+      border-radius: 2px;
+      -webkit-box-shadow: 0 1px 3px rgba(0,0,0,.25);
+      -moz-box-shadow: 0 1px 3px rgba(0,0,0,.25);
+      box-shadow: 0 1px 3px rgba(0,0,0,.25);
+      color: #000;
+      line-height: 1.4;
+    }
+    `],
+  animations: [
+    trigger('sidebarState', [
+      state('s-close', style({
+        transform: 'translateX(326px)'
+      })),
+      state('s-open',   style({
+        transform: 'translateX(326px)'
+      })),
+      transition('s-open => s-close', animate('100ms ease-in')),
+      transition('s-close => s-open', animate('100ms ease-out'))
+    ]),
+    trigger('mapState', [
+      state('s-close', style({
+        width: '100%'
+      })),
+      state('s-open',   style({
+        width: 'calc(100% - 326px)'
+      })),
+      transition('s-open => s-close', animate('100ms ease-in')),
+      transition('s-close => s-open', animate('100ms ease-out'))
+    ])
+  ]
+
 })
-export class MapDefaultComponent implements OnInit {
+export class MapBuildingsComponent implements OnInit {
+  @ViewChild('mainContainer') mainContainer: ElementRef;
+  @ViewChild('heatContent') heatContent;
 
   //execution of an Observable,
   subscription: Subscription;
@@ -53,6 +122,9 @@ export class MapDefaultComponent implements OnInit {
   helpContainerActive: boolean = false;
   shareContainerActive: boolean = false;
 
+  //animation for sidebar and map components
+  sidebarState = 's-close';
+
   //sharing url string
   shareUrl: string;
 
@@ -60,13 +132,23 @@ export class MapDefaultComponent implements OnInit {
   //add subDynamicLayers sublayers meta data
   subDynamicLayerSubLayers: any;
 
-  constructor(private _mapService: MapService, private mapDefaultService: MapDefaultService, private elementRef: ElementRef, private projectsService: ProjectsListService, private searchService: SearchService, private featureService: FeatureQueryService, private identify: IdentifyService, private pointAddRemoveService: PointAddRemoveService, private activatedRoute: ActivatedRoute, private mapWidgetsService: MapWidgetsService, private menuService: MenuService) {
+  sidebarTitle: string;
+
+  constructor(private _mapService: MapService, private mapDefaultService: MapDefaultService, private projectsService: ProjectsListService, private searchService: SearchService, private featureService: FeatureQueryService, private identify: IdentifyService, private pointAddRemoveService: PointAddRemoveService, private activatedRoute: ActivatedRoute, private mapWidgetsService: MapWidgetsService, private menuService: MenuService, private renderer2: Renderer2) {
     this.queryUrlSubscription = activatedRoute.queryParams.subscribe(
       (queryParam: any) => {
         //console.log("URL Parametrai", queryParam);
         return this.queryParams = queryParam;
       }
     );
+  }
+
+  toggleSidebar() {
+    this.sidebarState = this.sidebarState === 's-close' ? 's-open' : 's-close';
+  }
+
+  openSidebar() {
+    this.sidebarState = 's-open';
   }
 
   // toggle help container
@@ -120,9 +202,12 @@ export class MapDefaultComponent implements OnInit {
   }
 
   initView(view) {
-    let urls = this.mapDefaultService.getUrls();
-    let identify = this.identify.identify(urls[0]);
-    let identifyParams = this.identify.identifyParams();
+    const rend = this.renderer2;
+    const tooltip = rend.createElement('div');
+    const mainContainerDom = this.mainContainer;
+    const urls = this.mapDefaultService.getUrls();
+    const identify = this.identify.identify(urls[0]);
+    const identifyParams = this.identify.identifyParams();
     let count = 0;
     view.popup.dockOptions = {
       position: 'bottom-left'
@@ -137,10 +222,33 @@ export class MapDefaultComponent implements OnInit {
       }
     });
 
-    view.on("pointer-move", (event) => {
-      //console.log("MOUSE event", event.native)
-    });
+    //add tooltip on mouse move
+    this.view.on("pointer-move", (event) => {
 
+      if (tooltip.textContent.length > 0) {
+        tooltip.textContent = '';
+        rend.setStyle(tooltip, 'padding', '0px');
+      };
+      view.hitTest(event)
+        .then(function(response){
+          if (response.results.length > 0) {
+            const top = (event.y + 100) < window.innerHeight ? event.y + 10 + 'px' : event.y - 30 + 'px';
+            const left = (event.x + 100) < window.innerWidth ?  event.x + 20 + 'px' : (event.x - 110) + 'px';
+            const values = response.results["0"];
+            const textMsg = `${values.graphic.attributes.ADRESAS}`;
+            const text = rend.createText(textMsg);
+            rend.appendChild(tooltip, text);
+            rend.appendChild(mainContainerDom.nativeElement, tooltip);
+            rend.addClass(tooltip, 'buldings-tooltip')
+            rend.setStyle(tooltip, 'top', top);
+            rend.setStyle(tooltip, 'left', left);
+            rend.setStyle(tooltip, 'padding', '5px');
+            document.body.style.cursor = "pointer";
+          } else {
+            document.body.style.cursor = "auto";
+          }
+        });
+    });
     view.on("click", (event) => {
       //check if layer is suspended
       const suspended = this._mapService.getSuspendedIdentitication();
@@ -165,8 +273,9 @@ export class MapDefaultComponent implements OnInit {
 
       //foreach item execute task
       view.layerViews.items.forEach(item => {
-        //do not execute if layer is for buffer graphics
-        if ((item.layer.id !== "bufferPolygon") && (!suspended)) {
+        //do not execute if layer is for buffer graphics and if layer is GroupLayer with list mnode 'hide-children' or type is group which means it is dedicated for retrieving data to custom sidebar via feature layer hitTest method
+        //skip FeatureSelection layer as well wich is created only for Deature selection graphics
+        if ((item.layer.id !== "bufferPolygon") && (!suspended) && (item.layer.listMode !== 'hide-children') && (item.layer.type !== 'group') && (item.layer.id !== 'FeatureSelection') && (item.layer.popupEnabled)) {
           //asign correct  visible ids based on layer name (layerId property)
           // layerId === item.layer.id
 
@@ -180,7 +289,7 @@ export class MapDefaultComponent implements OnInit {
           let defferedList = this.identify.identify(item.layer.url).execute(identifyParams).then((response) => {
             //console.log("RSP", response);
             //console.log("ids",ids);
-            let results = response.results.reverse();
+            let results = response.results;
             return results.map((result) => {
               let name = result.layerName;
               let feature = result.feature;
@@ -217,19 +326,18 @@ export class MapDefaultComponent implements OnInit {
         }
       });
 
-      //if mobile identify with query
-      if (this.mobile) {
-        //this.pointAddRemoveService.identifyItem(this.map, view, this.featureLayers, event);
-      } else {
-        //else identify with hitTest method
-        //find layer and remove it, max 4 layers: polygon, polyline, point, and additional point if scale is set from point to point in mxd
-        this._mapService.removeSelectionLayers(this.map);
-        //this.view.popup.close()
-        //hitTest check graphics in the view
-        this.hitTestFeaturePopup(view, event);
-        //init popup on click event widh identify service
-        //this.identify.showItvPopupOnCLick(view, event, identify, identifyParams);
-      }
+
+    //remove existing graphic
+    this._mapService.removeFeatureSelection();
+    //else identify with hitTest method
+    //find layer and remove it, max 4 layers: polygon, polyline, point, and additional point if scale is set from point to point in mxd
+    this._mapService.removeSelectionLayers(this.map);
+    //this.view.popup.close()
+    //hitTest check graphics in the view
+    this.hitTestFeaturePopup(view, event);
+    //init popup on click event widh identify service
+    //this.identify.showItvPopupOnCLick(view, event, identify, identifyParams);
+
     }, (error) => { console.error(error); });
   }
 
@@ -243,14 +351,30 @@ export class MapDefaultComponent implements OnInit {
     //console.log(screenPoint)
     view.hitTest(screenPoint)
       .then(features => {
+        const values = features.results[0];
+        const showResult = values.graphic;
+        const currentClass = `${values.graphic.attributes.REITING} klasė`;
+        const currentYear = `${values.graphic.attributes.SEZONAS}-${values.graphic.attributes.SEZONAS-1} sezonas`;
+        this.openSidebar();
+        this.heatContent = values.graphic.attributes;
+        //add selectionResultsToGraphic
+        const groupFeatureSelectionLayer = this._mapService.initFeatureSelectionGraphicLayer('FeatureSelection', showResult.layer.maxScale, showResult.layer.minScale, 'hide');
+        const {geometry, layer, attributes} = showResult;
+        const selectionGraphic = this._mapService.initFeatureSelectionGraphic('polygon', geometry, layer, attributes);
+        groupFeatureSelectionLayer.graphics.add(selectionGraphic);
+        this.map.add(groupFeatureSelectionLayer);
       });
   }
 
   ngOnInit() {
+    document.body.classList.add('buldings-theme');
     //add snapshot url and pass path name ta Incetable map service
     let snapshotUrl = this.activatedRoute.snapshot.url["0"];
     let basemaps: any[] = [];
     let themeGroupLayer: any;
+
+    //add sidebar names
+    this.sidebarTitle = 'Šilumos suvartojimas'
 
     this.mobile = this._mapService.mobilecheck();
     this._mapService.isMobileDevice(this.mobile);
@@ -286,9 +410,19 @@ export class MapDefaultComponent implements OnInit {
       let themeName = findKey(MapOptions.themes, { "id": snapshotUrl.path });
       let themeLayers = pick(MapOptions.themes, themeName)[themeName]["layers"];
 
+      //all theme layers will be added to common group layer
+      const mainGroupLayer = this._mapService.initGroupLayer(themeName + 'group', 'Pastatai', 'show');
+      this.map.add(mainGroupLayer);
+
       forIn(themeLayers, (layer, key) => {
          const response = this._mapService.fetchRequest(layer.dynimacLayerUrls)
-         this._mapService.pickMainThemeLayers(response, layer, key, this.queryParams);
+         const popupEnabled = false;
+         //create group and add all grouped layers to same group, so we could manage group visibility
+         const groupLayer = this._mapService.initGroupLayer(key + 'group', 'Šildymo sezono reitingas', 'hide-children');
+         mainGroupLayer.add(groupLayer);
+         this._mapService.pickMainThemeLayers(response, layer, key, this.queryParams, popupEnabled, groupLayer);
+         //add feature layer with opacity 0
+         this._mapService.pickCustomThemeLayers(response, layer, key, this.queryParams, groupLayer);
       });
       //set raster layers
       const rasterLayers = this._mapService.getRasterLayers();

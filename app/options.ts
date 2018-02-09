@@ -30,7 +30,7 @@ export const MapOptions: any = {
       custom: true, // true if theme funcionality is custom
       name: "Pastatų administravimas", //theme name
       //id: "theme-buildings", //theme id class and theme URL query name
-      id: "pastatai-administravimas", //theme id class and theme URL query name
+      id: "pastatu-administravimas", //theme id class and theme URL query name
       imgUrl: "./app/img/statyba.png", //image URL
       imgAlt: "Pastatų administravimas", // image alt attribute
       layers: {
@@ -40,6 +40,22 @@ export const MapOptions: any = {
           featureLayerUrls: [
             "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/Pastatu_administravimas/MapServer/1"
           ]
+        }
+      }
+    },
+    buildings: {
+      production: true, //if theme is ready for production
+      custom: true, // true if theme funcionality is custom
+      name: "Pastatai", //theme name
+      //id: "theme-buildings", //theme id class and theme URL query name
+      id: "pastatai", //theme id class and theme URL query name
+      imgUrl: "./app/img/pastatai.png", //image URL
+      imgAlt: "Pastatai", // image alt attribute
+      layers: {
+        silumosSuvartojimas: { // layer unique name
+          dynimacLayerUrls:  // dynamicService URL, only 1 url per uniquer Layer
+          "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/Pastatai_statyba/MapServer",
+          name: "Pastatai"
         }
       }
     },
@@ -248,8 +264,25 @@ export const MapOptions: any = {
         }
       }
     },
-    legacyMap: {
+    elderships: {
+      //url: "https://maps.vilnius.lt/maps_vilnius/?theme=civ-sauga",
       production: true, //if theme is ready for production
+      name: "Seniūnijos", //theme name
+      //id: "civ-sauga", //theme id class and theme URL query name
+      id: "seniunijos", //theme id class and theme URL query name
+      imgUrl: "./app/img/seniunijos.png", //image URL
+      imgAlt: "Seniūnijos", // image alt attribute
+      layers: {
+        elderships: { // layer unique name //
+          dynimacLayerUrls:  // dynamicService URL, only 1 url per uniquer Layer
+            "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/Seniunijos/MapServer",
+          opacity: 1,
+          name: "Seniūnijos" // dynamicLayers group name
+        }
+      }
+    },
+    legacyMap: {
+      production: false, //if theme is ready for production
       custom: true, // true if theme funcionality is custom
       name: "Senoji žemėlapio versija", //theme name
       id: "legacy", //theme id class and theme URL query name
@@ -278,5 +311,23 @@ export const MapOptions: any = {
   search: {
     // search widget locator url
     locator: "https://zemelapiai.vplanas.lt/arcgis/rest/services/Lokatoriai/PAIESKA_COMPOSITE/GeocodeServer"
+  }
+}
+
+//additionl themes mapOptions
+export const HeatingDataValues = {
+  color: {
+    green: 'rgba(167, 206, 39, 0.8)',
+    yellow: 'rgba(249, 212, 31, 0.8)',
+    orange: 'rgba(245, 143, 58, 0.8)',
+    red: 'rgba(225, 8, 39, .8)',
+    purple: 'rgba(148, 39, 105, .8)'
+  },
+  label: {
+    label1: 'Gera (1-3)',
+    label2: 'Vidutinė (4-5)',
+    label3: 'Bloga (6-8)',
+    label4: 'Labai bloga (9-11)',
+    label5: 'Ypatingai bloga (12-15)'
   }
 }

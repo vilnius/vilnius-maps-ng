@@ -1,12 +1,13 @@
-import { NgModule }      from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import {HttpClientModule} from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
 import { MapComponent } from './map.component';
-import { MapDefaultComponent } from './themes';
+import { MapDefaultComponent, MapBuildingsComponent } from './themes';
 import { ThemesComponent } from './themes.component';
-import { AppComponent }  from './app.component';
-import { MenuModule }  from './menu/menu.module';
+import { AppComponent } from './app.component';
+import { CommonWidgetsComponent } from './common-widgets.component';
+import { MenuModule } from './menu/menu.module';
 import { MapService } from './map.service';
 import { MapDefaultService } from './themes/default/map-default.service';
 import { ProjectsListService } from './projects-list/projects-list.service';
@@ -19,15 +20,16 @@ import { IdentifyService } from './services/identify/identify.service';
 import { FeatureQueryService } from './query/feature-query.service';
 import { PointAddRemoveService } from './query/point-add-remove.service';
 import { TextHighlightPipe } from './pipes/text-highlight.pipe';
-import { ScaleAndLogoComponent, BasemapToggle, CreditsCompponent, CompassComponent } from './map-widgets';
+import { ScaleAndLogoComponent, BasemapToggle, CreditsCompponent, CompassComponent, SidebarComponent } from './map-widgets';
 import { ProjectsGalleryComponent } from './gallery/projects-gallery.component';
 import { Ng2GalleryCompontent } from './gallery/ng2-gallery.component';
 import { Routing } from './app.routing';
 
 import { Ng2ImageGalleryModule } from 'ng2-image-gallery';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import 'hammerjs';
 import { MaterialModule } from '@angular/material';
+import { NgxPopperModule } from 'ngx-popper';
 
 @NgModule({
   imports: [
@@ -42,12 +44,14 @@ import { MaterialModule } from '@angular/material';
     MenuModule,
     //3rd party imports
     MaterialModule,
-    Ng2ImageGalleryModule
+    Ng2ImageGalleryModule,
+    NgxPopperModule
   ],
   declarations: [
     AppComponent,
     MapComponent,
     MapDefaultComponent,
+    MapBuildingsComponent,
     ThemesComponent,
     ProjectsListComponent,
     AutoCompleteComponent,
@@ -56,8 +60,10 @@ import { MaterialModule } from '@angular/material';
     BasemapToggle,
     CreditsCompponent,
     CompassComponent,
+    SidebarComponent,
     ProjectsGalleryComponent,
-    Ng2GalleryCompontent
+    Ng2GalleryCompontent,
+    CommonWidgetsComponent
   ],
   providers: [
     MapService,

@@ -13,6 +13,7 @@ body {
     font-size: 17px;
     letter-spacing: 0;
     color: #4c4c4c;
+    overflow: hidden;
 }
 :focus {
     outline: none;
@@ -1223,11 +1224,15 @@ label {
   background: #e61c24;
 }
 .sub-layers-container #close-filter {
-    padding: 18px 18px;
-    height: 53px;
+  padding: 15px 18px;
+  height: 53px;
+  background-color: #A80C0D;
+  font-size: 20px;
 }
 .sub-layers-container #close-filter svg {
     fill: #fff;
+    width: 15px;
+    height: 15px;
 }
 #inner-help-container svg, #inner-share-container svg {
     width: 30px;
@@ -2107,12 +2112,15 @@ ul > li .esri-layer-list__item-title {
   overflow-y: auto;
 }
 .sub-layers-container h3 {
-    background-color: #f3f3f3;
-    color: #53565d;
-    border-bottom: 1px solid #e0e0e0;
-    padding-left: 60px;
-    padding-right: 20px;
-    margin-bottom: 0;
+  background-color: #f3f3f3;
+  color: #53565d;
+  border-bottom: 1px solid #e0e0e0;
+  padding-left: 70px;
+  padding-right: 20px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  line-height: 34px;
+  margin-bottom: 0;
 }
 #sub-layer-list {
   position: fixed;
@@ -2313,7 +2321,7 @@ ul > li .esri-layer-list__item-title {
     bottom: 50px;
   }
   .sub-layers-container {
-    width: 400px;
+    width: 326px;
   }
 }
 @media only screen and (min-width: 840px) {
@@ -2736,4 +2744,34 @@ ul > li .esri-layer-list__item-title {
   .themes-page-logo span {
     margin-right: 260px;
   }
+}
+
+/* Hide invisible at scale and to meet theme visual requirements after modification and changes */
+.buldings-theme .esri-layer-list__item--invisible-at-scale {
+  /*display: none;*/
+}
+.buldings-theme .esri-legend__service.esri-legend__group-layer-child .esri-legend__service-label,
+.buldings-theme .esri-legend__group-layer  .esri-legend__service.esri-legend__group-layer .esri-legend__service-label
+ {
+  display: none;
+}
+
+/* Border radius */
+.border-r-2 {
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+}
+
+/* Tooltips styling for Popper.js */
+popper-content {
+  border: none;
+}
+.ngxp__inner {
+  font-size: 14px;
+}
+.ngxp__container {
+  background-color: #fff;
+  border: none !important;
+  z-index: 99999;
 }

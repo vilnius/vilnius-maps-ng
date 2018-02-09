@@ -336,8 +336,8 @@ export class MenuToolsComponent implements OnInit, AfterViewInit {
     //this.calculatedUnits
     const endString = ended ? "" : " (užbaigti dvigubu paspaudimu)";
     let text: string;
-    geometryType === "line" ? text = geometry.toFixed(3) + " km" + endString : text = `x: ${points[0].toFixed(5)}, y: ${points[1].toFixed(5)}`;
-    geometryType === "line" ? this.calculatedUnits = geometry.toFixed(3) + " km" : this.calculatedUnits = `x: ${points[0].toFixed(5)}, y: ${points[1].toFixed(5)}`
+    geometryType === "line" ? text = geometry.toFixed(3) + " km" + endString : text = `x: ${points[1].toFixed(2)}, y: ${points[0].toFixed(2)}`;
+    geometryType === "line" ? this.calculatedUnits = geometry.toFixed(3) + " km" : this.calculatedUnits = `x: ${points[1].toFixed(2)}, y: ${points[0].toFixed(2)}`
     const graphic = this.menuToolsService.createLineOrPointLabelGraphic(points, text, this.view);
     this.view.graphics.add(graphic);
   }
@@ -521,7 +521,5 @@ export class MenuToolsComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // console.log("renderer", this.renderer);
-    // console.log("bufferCheckbox", this.bufferCheckbox.nativeElement.checked);
   }
 }

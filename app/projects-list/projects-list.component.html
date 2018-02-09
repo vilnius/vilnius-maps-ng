@@ -17,26 +17,28 @@
   </span>
   </div>
 
-  <div *ngIf="projectsThemes" class="filter-theme">
+<div *ngIf="projectsThemes" class="filter-theme">
+  <div>
     <label for="projects">Tema</label> <br>
     <div class="checkbox" *ngFor="let theme of projectsThemes">
       <input type="checkbox" value="" id="{{theme}}">
       <label class="label-style animate" [class.active]="!activeTheme[theme.toString()]" for="{{theme}}" [ngSwitch]="theme" (click)=filterFeatures(theme)>
-        <span class="n{{theme}}-theme projects-theme"></span>
-        <span *ngSwitchCase="1" class="theme-name">Kultūra</span>
-        <span *ngSwitchCase="2" class="theme-name">Švietimas</span>
-        <span *ngSwitchCase="3" class="theme-name">Sveikatos apsauga</span>
-        <span *ngSwitchCase="4" class="theme-name">Socialinė infrastruktūra</span>
-        <span *ngSwitchCase="5" class="theme-name">Susisiekimo infrastruktūra</span>
-        <span *ngSwitchCase="6" class="theme-name">Parkai ir viešosios erdvės</span>
-        <span *ngSwitchCase="7" class="theme-name">Traukos centrai</span>
-        <span *ngSwitchCase="8" class="theme-name">Aplinkosauga</span>
-        <span *ngSwitchCase="9" class="theme-name">Viešasis valdymas</span>
-        <span *ngSwitchCase="10" class="theme-name">Turizmas</span>
-        <span *ngSwitchDefault>Nenustatyta tema</span>
-  </label>
+          <span class="n{{theme}}-theme projects-theme"></span>
+          <span *ngSwitchCase="1" class="theme-name">Kultūra</span>
+          <span *ngSwitchCase="2" class="theme-name">Švietimas</span>
+          <span *ngSwitchCase="3" class="theme-name">Sveikatos apsauga</span>
+          <span *ngSwitchCase="4" class="theme-name">Socialinė infrastruktūra</span>
+          <span *ngSwitchCase="5" class="theme-name">Susisiekimo infrastruktūra</span>
+          <span *ngSwitchCase="6" class="theme-name">Parkai ir viešosios erdvės</span>
+          <span *ngSwitchCase="7" class="theme-name">Traukos centrai</span>
+          <span *ngSwitchCase="8" class="theme-name">Aplinkosauga</span>
+          <span *ngSwitchCase="9" class="theme-name">Viešasis valdymas</span>
+          <span *ngSwitchCase="10" class="theme-name">Turizmas</span>
+          <span *ngSwitchDefault>Nenustatyta tema</span>
+    </label>
     </div>
   </div>
+</div>
 
   <div *ngIf="projectsFinalYears" class="filter-year">
     <label for="year">Užbaigimo metai</label> <br>
@@ -78,9 +80,11 @@
   </form>
 </div>
 
-<div *ngIf="!projectsList" style="width: 20px; margin: 40px auto">
-  <img style="width: 20px;" src="app/img/ajax-loader.gif">
-</div>
+<ng-template #loading>
+  <div style="width: 20px; margin: 40px auto">
+    <img style="width: 20px;" src="app/img/ajax-loader.gif">
+  </div>
+</ng-template>
 
 <div *ngIf="projectsList">
   <div *ngIf="mainFilterCheck == 'map'">
@@ -106,7 +110,7 @@
   </div>
 </div>
 
-<div *ngIf="fullListChanged">
+<div *ngIf="fullListChanged else loading">
   <div *ngIf="mainFilterCheck == 'word'">
     <h4>Rezultatai pagal žodį:
       <span class="badge">
