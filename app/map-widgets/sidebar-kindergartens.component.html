@@ -1,0 +1,155 @@
+<div class="kindergartens-sidebar col-xs-6 col-md-4 r-sidebar sidebar-right">
+  <p class="build-p">{{title}}</p>
+  <ng-content ></ng-content>
+  <div #contentWrapper id="build-inner" class="inner sub-build">
+    <ng-container [ngTemplateOutlet]="sidebarContent && kindergartensContent"></ng-container>
+    <ng-container [ngTemplateOutlet]="infoTemplate"></ng-container>
+  </div>
+</div>
+
+<ng-template #kindergartensContent>
+  <div [@innerSidebarState]="innerState" class="main-sidebar-content">
+    <h3>{{sidebarContent.SCHOOL_TYPE}}: {{sidebarContent.LABEL}}</h3><a class="button close animate" (click)="closeInfo()" title="Uždaryti">✕</a>
+    <p>
+      <span class="font-l">telefonas<br /></span>
+      {{sidebarContent.PHONE}}
+    </p>
+    <p *ngIf="sidebarContent.FAX.length > 1">
+      <span>faksas<br /></span>
+      {{sidebarContent.FAX}}
+    </p>
+    <p>
+      <span class="font-l">priskirtos seniūnijos<br /></span>
+      {{sidebarContent.ELDERATE}} <br *ngIf="sidebarContent.ELDERATE2" /> {{sidebarContent.ELDERATE2}}
+      <br *ngIf="sidebarContent.ELDERATE3" /> {{sidebarContent.ELDERATE3}} <br *ngIf="sidebarContent.ELDERATE3" /> {{sidebarContent.ELDERATE4}}
+    </p>
+    <p *ngIf="sidebarContent.EMAIL !== '-'">
+      <span>el. paštas<br /></span>
+      <a href="mailto:{{sidebarContent.EMAIL}}">{{sidebarContent.EMAIL}}</a>
+    </p>
+    <div class='group-grid' *ngIf="groups.length > 0">
+      <div class="flex-grid-3 title">
+        <div class="col-1">Grupė</div>
+        <div class="col-2">Kalba</div>
+        <div class="col-3">Vaik. sk.</div>
+        <div class="col-4">Liko vt.</div>
+      </div>
+      <div *ngFor="let group of groups">
+        <div class="flex-grid-3">
+          <div class="col-1">{{group.TYPE_LABEL}}</div>
+          <div class="col-2">{{group.LAN_LABEL}}</div>
+          <div class="col-3">{{group.CHILDS_COUNT}}</div>
+          <div class="col-4">{{group.FREE_SPACE}} </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #loading>
+  <div style="width: 20px; margin: 40px auto">
+    <img style="width: 20px;" src="app/img/ajax-loader.gif">
+  </div>
+</ng-template>
+
+<ng-template #infoTemplate>
+  <div class="sidebar-container" *ngIf="dataStore else loading">
+    <div class="main-s-content">
+      <p>
+        <span>Filtruoti įstaigas</span>
+        <span class="badge red" *ngIf="filtersOn" (click)="resetFilters()">valyti filtrus</span>
+      </p>
+    </div>
+    <form ngNativeValidate *ngIf="dataStore" (ngSubmit)="onSubmitAnalyze(form)" #form="ngForm"  class="kGartens-form" (change)="isFiltered()">
+      <div class="input-group">
+        <md-checkbox
+          #bufferCheckbox
+          [(ngModel)]="analyzeParams.hasVacancy"
+          (change)="isFiltered()"
+          [ngModelOptions]="{standalone: true}"
+          >
+          Yra laisvų vietų
+        </md-checkbox>
+
+      </div>
+
+      <div class="address input-field col s12">
+        <div class="form-title">Adresas</div>
+        <search-kindergartens [analyzeParams]="analyzeParams"></search-kindergartens>
+      </div>
+
+      <div class="form-title">Atstumas nuo adreso (km)</div>
+      <input [(ngModel)]="analyzeParams.bufferSize" id="buffersize" name="buffersize" required class="form-control form-check-inline buffer-size" type="number" #buffer="ngModel" pattern="^([0-9]*[1-9][0-9]*(\.[0-9]+)?|[0]+\.[0-9]*[1-9][0-9]*)$" (change)="bufferChange(buffer)">
+      <div [hidden]="buffer.valid || buffer.pristine" class="alert alert-danger buffer-alert">
+        Rašykite sveikais skaičiais arba naudokite , simbolį
+      </div>
+
+      <md-accordion>
+        <md-expansion-panel>
+          <md-expansion-panel-header>
+            <md-panel-title>
+              Išplėstiniai filtrai
+            </md-panel-title>
+          </md-expansion-panel-header>
+
+          <div class="form-group">
+            <div class="input-field col s12">
+              <div class="form-title">Darželio tipas</div>
+              <select required class="form-control" id="themeSelect" [(ngModel)]="analyzeParams.groupByType" name="themeSelect" #themeSelect="ngModel" [class.selected-garten-filter]="analyzeParams.groupByType !== ''">
+                  <option value="">Pasirinkite</option>
+                  <option #theme *ngFor="let data of dataType; index as i"  [ngValue]="data">{{data}}</option>
+              </select>
+              <span class="mat-expansion-indicator vp-select" style="transform: rotate(0deg);"></span>
+            </div>
+            <div class="input-field col s12">
+              <div class="form-title">Ugdomoji kalba</div>
+              <select required class="form-control" id="themeSelect" [(ngModel)]="analyzeParams.groupByLang" name="themeSelect" #themeSelect="ngModel" [class.selected-garten-filter]="analyzeParams.groupByLang !== ''">
+                  <!-- <option value="" disabled>Pasirinkite temą</option> -->
+                  <option value="">Pasirinkite</option>
+                  <option #theme *ngFor="let data of dataLang; index as i"  [ngValue]="data">{{data}}</option>
+              </select>
+              <span class="mat-expansion-indicator vp-select" style="transform: rotate(0deg);"></span>
+            </div>
+            <div class="input-field col s12">
+              <div class="form-title">Grupės amžius</div>
+              <select required class="form-control" id="themeSelect" [(ngModel)]="analyzeParams.groupByAge" name="themeSelect" #themeSelect="ngModel" [class.selected-garten-filter]="analyzeParams.groupByAge !== ''">
+                  <!-- <option value="null" disabled>Pasirinkite temą</option> -->
+                  <option value="">Pasirinkite</option>
+                  <option #theme *ngFor="let data of dataAge; index as i"  [ngValue]="data">{{data}}</option>
+              </select>
+              <span class="mat-expansion-indicator vp-select" style="transform: rotate(0deg);"></span>
+            </div>
+            <div class="feature-results"  *ngIf="checkboxChecked">
+              <div class="feature-count">
+                <p class="feature-title feature-units">Perdengtų rezultatų skaičius:</p>
+                <span [ngStyle]="!calculateCount && {'display': 'none'}" class="feature-units">{{this.calculateCount}}</span>
+                <span [ngStyle]="calculateCount && {'display': 'none'}" class="feature-units">-</span>
+              </div>
+            </div>
+          </div>
+
+        </md-expansion-panel>
+      </md-accordion>
+
+      <div class="filter-gartens-button" (click)="filterGartens()">
+        Filtruoti įstaigas
+      </div>
+    </form>
+    <div class="list-info" *ngIf="filteredGartens">
+      <h4>
+        Rastos įstaigos <span *ngIf="distance">{{distance}} km spinduliu</span>
+        <span class="badge">{{filteredGartens.length}}</span>
+      </h4>
+      <span [class.selected-garten]="garten.GARDEN_ID === selectedGartenId" class="garten-list" *ngFor="let garten of filteredGartens" attr.data-garten-id="{{garten.GARDEN_ID}}" (click)="selectGartens(garten.GARDEN_ID, contentWrapper)">{{garten.LABEL}}</span>
+    </div>
+
+    <div *ngIf="filteredGartens.length === 0"  class="alert-content">
+      <p class="alert alert-danger buffer-alert">Nėra įstaigų<br>
+        <span class="filter-msg">
+          Pakeiskite arba išvalykite filtrus
+        </span>
+      </p>
+    </div>
+
+  </div>
+</ng-template>

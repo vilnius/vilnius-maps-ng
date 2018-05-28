@@ -13,28 +13,30 @@
     <link rel="stylesheet" href="https://esri.github.io/calcite-maps/dist/css/calcite-maps-bootstrap.min-v0.3.css">
     <!-- Calcite Maps -->
     <link rel="stylesheet" href="https://esri.github.io/calcite-maps/dist/css/calcite-maps-arcgis-4.x.min-v0.3.css">
-    <link rel="stylesheet" href="https://js.arcgis.com/4.5/esri/css/main.css">
+    <link rel="stylesheet" href="https://maps.vilnius.lt/arcgis_js_api/library/4.5/esri/css/main.css">
     <link href="app/styles/indigo-pink.css" rel="stylesheet">
     <link rel="stylesheet" href="app/fonts/font-awesome.min.css">
     <!-- <link rel="stylesheet" href="app/styles/main_api_4.5.min.css"> -->
     <link rel="stylesheet" href="app/styles/page.css">
     <link rel="stylesheet" href="app/styles/main.css">
+    <link rel="stylesheet" href="app/styles/normalize.css">
     <link rel="stylesheet" href="app/styles/ng2-image-gallery.css">
     <!-- Configure and load ESRI libraries -->
-    <script>
+    <script >
       window.dojoConfig = {
         has: {
-          "esri-featurelayer-webgl": 1
+          "esri-featurelayer-webgl": 1,
+          "esri-promise-compatibility": 1
         },
         locale: "lt",
         parseOnLoad: true,
         async: true
       };
     </script>
-    <script src="https://js.arcgis.com/4.5/"></script>
-
+    <!-- <script src="https://js.arcgis.com/4.6/"></script> -->
+    <script src="https://maps.vilnius.lt/arcgis_js_api/library/4.5/init.js"></script>
     <!-- Load webpack bundles-->
-    <script>
+    <script async >
       require(["/dist/vendor.bundle.js", "/dist/main.bundle.js"], function (vendor, main) {});
     </script>
   </head>

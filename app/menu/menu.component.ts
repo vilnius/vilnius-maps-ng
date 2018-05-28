@@ -113,7 +113,7 @@ export class MenuComponent implements OnInit {
 
   watchLayers() {
     watchUtils.whenTrue(this.view, "updating", (b) => {
-      //console.log("b", b);
+      //console.log("view updating ...", b);
       this.componentsVisibleSubLayerNumberState = this.menuService.getVisibleSubLayerNumberState();
       //check if help box is enabled with componentsVisibleSubLayerNumberState
       if (this.componentsVisibleSubLayerNumberState) {

@@ -8,7 +8,7 @@ import { AppModule } from './app.module';
 if (environment.production) {
   require("./styles/page.css");
   require("./styles/main.css");
-
+  require("./styles/normalize.css");
   enableProdMode();
 }
 

@@ -13,7 +13,7 @@ export const MapOptions: any = {
     staticServices: {
       //for basemaps const check basemaps.ts in map-widgets folder
       basemapUrl: "https://zemelapiai.vplanas.lt/arcgis/rest/services/Baziniai_zemelapiai/Vilnius_basemap_1000/MapServer",
-      basemapDarkUrl: "https://zemelapiai.vplanas.lt/arcgis/rest/services/TESTAVIMAI/Vilnius_basemap_dark_calibrated/MapServer",
+      basemapDarkUrl: "https://atviras.vplanas.lt/arcgis/rest/services/Baziniai_zemelapiai/Vilnius_basemap_dark_LKS/MapServer",
       ortofotoUrl: "https://zemelapiai.vplanas.lt/arcgis/rest/services/Baziniai_zemelapiai/ORT5LT_2016/MapServer",
       basemapEngineeringUrl: "https://zemelapiai.vplanas.lt/arcgis/rest/services//Baziniai_zemelapiai/Vilnius_Inzinerija/MapServer",
       geometryUrl: "https://zemelapiai.vplanas.lt/arcgis/rest/services/Utilities/Geometry/GeometryServer",
@@ -31,7 +31,7 @@ export const MapOptions: any = {
       name: "Pastatų administravimas", //theme name
       //id: "theme-buildings", //theme id class and theme URL query name
       id: "pastatu-administravimas", //theme id class and theme URL query name
-      imgUrl: "./app/img/statyba.png", //image URL
+      imgUrl: "./app/img/pastatu-administravimas.png", //image URL
       imgAlt: "Pastatų administravimas", // image alt attribute
       layers: {
         administravimas: { // layer unique name
@@ -47,6 +47,7 @@ export const MapOptions: any = {
       production: true, //if theme is ready for production
       custom: true, // true if theme funcionality is custom
       name: "Pastatai", //theme name
+      description: "Gyvenamųjų pastatų šilumo suvartojimo informacija, faktinio energijos suvartojimo klasės, mėnesiniai šilumos suvartojimai pagal mokėjimus už šilumą", //meta description
       //id: "theme-buildings", //theme id class and theme URL query name
       id: "pastatai", //theme id class and theme URL query name
       imgUrl: "./app/img/pastatai.png", //image URL
@@ -65,6 +66,7 @@ export const MapOptions: any = {
       hide: false, //hide from themes menu, but add route with functionality
       custom: true,
       name: "Investiciniai projektai", //theme name
+      description: "Interaktyvus investicinių projektų žemėlapis yra skirtas Vilniaus gyventojams ir miesto svečiams patogiai ir išsamiai susipažinti su naujausia informacija apie mieste planuojamus, vykdomus ir jau įgyvendintus investicinius projektus",
       id: "projektai", //theme id class and theme URL query name
       imgUrl: "./app/img/projektai.png", //image URL
       imgAlt: "Investiciniai projektai", // image alt attribute
@@ -87,7 +89,7 @@ export const MapOptions: any = {
       custom: true, // true if theme funcionality is custom
       name: "Reklamos leidimai", //theme name
       id: "leidimai", //theme id class and theme URL query name
-      imgUrl: "./app/img/laisvalaikis.png", //image URL
+      imgUrl: "./app/img/reklamos.png", //image URL
       imgAlt: "Reklamos vietos" // image alt attribute
     },
     schools: {
@@ -97,7 +99,7 @@ export const MapOptions: any = {
       name: "Švietimas", //theme name
       //id: "schools", //theme id class and theme URL query name
       id: "svietimas", //theme id class and theme URL query name
-      imgUrl: "./app/img/svietimas.png", //image URL
+      imgUrl: "./app/img/mokyklos.png", //image URL
       imgAlt: "Švietimas", // image alt attribute
       layers: {
         mokyklos: { // layer unique name //
@@ -106,10 +108,28 @@ export const MapOptions: any = {
         }
       }
     },
+    kindergartens: {
+      production: true, //if theme is ready for production
+      custom: true, // true if theme funcionality is custom
+      name: "Darželiai", //theme name
+      //id: "theme-buildings", //theme id class and theme URL query name
+      description: "Ikimokyklinių ugdymo įstaigų (darželių, privačių darželių, kitų įstaigų) paieška pagal gyvenamąjį adresą, tipą, kalbą ar grupės amžių",
+      id: "darzeliai", //theme id class and theme URL query name
+      imgUrl: "./app/img/darzeliai.png", //image URL
+      imgAlt: "Darželiai", // image alt attribute
+      layers: {
+        darzeliai: { // layer unique name
+          dynimacLayerUrls:  // dynamicService URL, only 1 url per uniquer Layer
+          "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/Darzeliai/MapServer",
+          name: "Darželiai"
+        }
+      }
+    },
     teritory: {
       production: true, //if theme is ready for production
       name: "Planavimas ir statyba", //theme name
       //id: "teritory-planning", //theme id class and theme URL query name
+      description: "Teritorijų planavimo ir statybų temoje rasite informaciją apie šių sluoksnių grupes: kaimynijos, bendrasis planas, teritorijų planavimo registras, detalieji planai, koncepcijos, gatvių kategorijos, raudonosios linijos, leidimai statyti, inžineriniai projektai, specialūs planai, nomenklatūra, gyventojų tankumas",
       id: "teritoriju-planavimas", //theme id class and theme URL query name
       imgUrl: "./app/img/teritorijos.png", //image URL
       imgAlt: "Teritorijų planavimas", // image alt attribute
@@ -128,6 +148,7 @@ export const MapOptions: any = {
       production: true, //if theme is ready for production
       name: "Žemės grąžinimas", //theme name
       //id: "teritory-return", //theme id class and theme URL query name
+      description: "Teritorijų grąžinimo temoje rasite informaciją apie valstybinius žemės plotus, žemės gražinimą /atkūrimą, specialiuosius planus",
       id: "zemes-grazinimas", //theme id class and theme URL query name
       imgUrl: "./app/img/zeme.png", //image URL
       imgAlt: "Teritorijų grąžinimas", // image alt attribute
@@ -145,8 +166,9 @@ export const MapOptions: any = {
       production: true, //if theme is ready for production
       name: "Miesto tvarkymas", //theme name
       //id: "teritory-maintenance", //theme id class and theme URL query name
+      description: "Miesto tvarkymo temoje rasite informaciją apie šių sluoksnių grupes: gatvių priežūra, gatvių ir pėsčiųjų takų tvarkymo darbai, tvarkomos miesto teritorijos, medžių inventorizacija, atliekų tvarkymas",
       id: "miesto-tvarkymas", //theme id class and theme URL query name
-      imgUrl: "./app/img/tvarkymas.png", //image URL
+      imgUrl: "./app/img/miesto-tvarkymas.png", //image URL
       imgAlt: "Miesto tvarkymas", // image alt attribute
       layers: {
         miestoTvarkymas: { // layer unique name //
@@ -162,6 +184,7 @@ export const MapOptions: any = {
       production: true, //if theme is ready for production
       name: "Aplinkosauga", //theme name
       //id: "env", //theme id class and theme URL query name
+      description: "Aplinkosaugos temoje rasite informaciją apie šių sluoksnių grupes: triukšmo sklaida, tyliosios triukšmo ir prevencinės zonos, oro tarša, dugno nuosėdos, paviršinio vandens tarša, uždarytų savartynų tarša",
       id: "aplinkosauga", //theme id class and theme URL query name
       imgUrl: "./app/img/aplinkosauga.png", //image URL
       imgAlt: "Aplinkosauga", // image alt attribute
@@ -197,17 +220,18 @@ export const MapOptions: any = {
       production: true, //if theme is ready for production
       name: "Transportas / Dviračiai", //theme name
       //id: "cycling-tracks", //theme id class and theme URL query name
+      description: "Transporto temoje rasite informaciją apie rinkliavos zonas, kiss and ride stoteles, vaizdo stebėsenos vietas, viešąjį transportą, dviračių trasas, eismo įvykius",
       id: "transportas", //theme id class and theme URL query name
       imgUrl: "./app/img/dviraciai.png", //image URL
       imgAlt: "Transportas / Dviračiai", // image alt attribute
       layers: {
-        accidentsRaster: { // layer unique name //
-          dynimacLayerUrls:  // dynamicService URL, only 1 url per uniquer Layer
-          "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/Eismo_ivykiu_tankumas/MapServer",
-          name: "Eismo įvykių tankumas", // dynamicLayers group name
-          opacity: 0.7,
-          isRaster: true //is layer Ratser , do not identify layer if true / default value is false
-        },
+        // accidentsRaster: { // layer unique name //
+        //   dynimacLayerUrls:  // dynamicService URL, only 1 url per uniquer Layer
+        //   "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/Eismo_ivykiu_tankumas/MapServer",
+        //   name: "Eismo įvykių tankumas", // dynamicLayers group name
+        //   opacity: 0.7,
+        //   isRaster: true //is layer Ratser , do not identify layer if true / default value is false
+        // },
         transportas: { // layer unique name //
           dynimacLayerUrls:  // dynamicService URL, only 1 url per uniquer Layer
           "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/Transportas/MapServer",
@@ -220,8 +244,9 @@ export const MapOptions: any = {
       //url: "https://maps.vilnius.lt/maps_vilnius/?theme=laisvalaikis",
       production: true, //if theme is ready for production
       name: "Laisvalaikis", //theme name
+      description: "Laisvalaikio temoje rasite informaciją apie atviras sales, viešuosius tualetus, jaunimo veiklą, pėsčiųjų trasas",
       id: "laisvalaikis", //theme id class and theme URL query name
-      imgUrl: "./app/img/aktyvus-laisvalaikis.png", //image URL
+      imgUrl: "./app/img/laisvalaikis.png", //image URL
       imgAlt: "Laisvalaikis", // image alt attribute
       layers: {
         laisvalaikis: { // layer unique name //
@@ -235,30 +260,32 @@ export const MapOptions: any = {
       //url: "https://maps.vilnius.lt/maps_vilnius/?theme=caffee",
       production: true, //if theme is ready for production
       name: "Lauko kavinės", //theme name
-			//id: "caffee", //theme id class and theme URL query name
-			id: "kavines", //theme id class and theme URL query name
-			imgUrl: "./app/img/kavines.png", //image URL
-			imgAlt: "Lauko kavinės", // image alt attribute
-			layers: {
-				publicCaf: { // layer unique name //
-					dynimacLayerUrls:  // dynamicService URL, only 1 url per uniquer Layer
-						"https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/lauko_kavines/MapServer",
-					name: "Lauko kavinės" // dynamicLayers group name
-				}
-			}
+      //id: "caffee", //theme id class and theme URL query name
+      description: "Lauko kavinių temoje rasite informaciją apie lauko kavines, jų užimamus plotus, leidimus",
+      id: "kavines", //theme id class and theme URL query name
+      imgUrl: "./app/img/kavines.png", //image URL
+      imgAlt: "Lauko kavinės", // image alt attribute
+      layers: {
+        publicCaf: { // layer unique name //
+          dynimacLayerUrls:  // dynamicService URL, only 1 url per uniquer Layer
+          "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/lauko_kavines/MapServer",
+          name: "Lauko kavinės" // dynamicLayers group name
+        }
+      }
     },
     civilSecurity: {
       //url: "https://maps.vilnius.lt/maps_vilnius/?theme=civ-sauga",
       production: true, //if theme is ready for production
       name: "Civilinė sauga", //theme name
       //id: "civ-sauga", //theme id class and theme URL query name
+      description: "Civilinės saugos temoje rasite informaciją apie gyventojų perspėjimo sirenas, kolektyvinės apsaugos statinius, gyventojų evakuavimo punktus",
       id: "civiline-sauga", //theme id class and theme URL query name
       imgUrl: "./app/img/civiline-sauga.png", //image URL
       imgAlt: "Civilinė sauga", // image alt attribute
       layers: {
         publicCaf: { // layer unique name //
           dynimacLayerUrls:  // dynamicService URL, only 1 url per uniquer Layer
-            "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/Civiline_sauga/MapServer",
+          "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/Civiline_sauga/MapServer",
           opacity: 0.8,
           name: "Civilinė sauga" // dynamicLayers group name
         }
@@ -269,13 +296,14 @@ export const MapOptions: any = {
       production: true, //if theme is ready for production
       name: "Seniūnijos", //theme name
       //id: "civ-sauga", //theme id class and theme URL query name
+      description: "Seniūnijų temoje rasite informaciją apie seniūnijų ribas, būstines, seniūnaitijas, kaimynijas, planuojamus miesto tvarkymo darbus",
       id: "seniunijos", //theme id class and theme URL query name
       imgUrl: "./app/img/seniunijos.png", //image URL
       imgAlt: "Seniūnijos", // image alt attribute
       layers: {
         elderships: { // layer unique name //
           dynimacLayerUrls:  // dynamicService URL, only 1 url per uniquer Layer
-            "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/Seniunijos/MapServer",
+          "https://zemelapiai.vplanas.lt/arcgis/rest/services/Interaktyvus_zemelapis/Seniunijos/MapServer",
           opacity: 1,
           name: "Seniūnijos" // dynamicLayers group name
         }
@@ -310,7 +338,8 @@ export const MapOptions: any = {
   },
   search: {
     // search widget locator url
-    locator: "https://zemelapiai.vplanas.lt/arcgis/rest/services/Lokatoriai/PAIESKA_COMPOSITE/GeocodeServer"
+    locator: "https://zemelapiai.vplanas.lt/arcgis/rest/services/Lokatoriai/PAIESKA_COMPOSITE/GeocodeServer",
+    addressLocator: "https://zemelapiai.vplanas.lt/arcgis/rest/services/Lokatoriai/ADRESAI/GeocodeServer"
   }
 }
 

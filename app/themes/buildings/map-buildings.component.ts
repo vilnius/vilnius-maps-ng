@@ -36,11 +36,12 @@ import { forIn } from 'lodash';
   selector: 'esri-map-buildings',
   templateUrl: './app/themes/buildings/map-buildings.component.html',
   styles: [`
-    sidebar-map {
+    .sidebar-common {
       position: absolute;
+      position: fixed;
       height: 100%;
     }
-    sidebar-map p {
+    .sidebar-common p {
       padding: 6px 20px;
       line-height: 34px;
       letter-spacing: -.4px;
@@ -224,12 +225,17 @@ export class MapBuildingsComponent implements OnInit {
 
     //add tooltip on mouse move
     this.view.on("pointer-move", (event) => {
-
+      const screenPoint = {
+        //hitTest BUG, as browser fails to execute 'elementFromPoint' on 'Document'
+        //FIXME bug with x coordinate value, when menu icon is in view, temp solution: change x value from 0 to any value
+        x: event.x ? event.x : 600,
+        y: event.y
+      };
       if (tooltip.textContent.length > 0) {
         tooltip.textContent = '';
         rend.setStyle(tooltip, 'padding', '0px');
       };
-      view.hitTest(event)
+      view.hitTest(screenPoint)
         .then(function(response){
           if (response.results.length > 0) {
             const top = (event.y + 100) < window.innerHeight ? event.y + 10 + 'px' : event.y - 30 + 'px';
@@ -422,7 +428,7 @@ export class MapBuildingsComponent implements OnInit {
          mainGroupLayer.add(groupLayer);
          this._mapService.pickMainThemeLayers(response, layer, key, this.queryParams, popupEnabled, groupLayer);
          //add feature layer with opacity 0
-         this._mapService.pickCustomThemeLayers(response, layer, key, this.queryParams, groupLayer);
+         this._mapService.pickCustomThemeLayers(response, layer, key, this.queryParams, groupLayer, 2);
       });
       //set raster layers
       const rasterLayers = this._mapService.getRasterLayers();

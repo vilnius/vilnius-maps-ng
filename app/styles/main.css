@@ -61,12 +61,12 @@ ul li {
   margin-bottom: 1em; margin-bottom: 0;
   font-size: 0.82em;
   line-height: 1.4;
-  border-bottom: 1px solid #ebebef;
+  border-bottom: none;
   display: block;
   padding: 10px 15px;
 }
 .dark .esri-view-surface {
-  background: #514f51
+  background: #505050
 }
 .map-col, .map-default {
   padding: 0;
@@ -712,7 +712,12 @@ label.label-style.active:after {
     line-height: 20px;
     color: #4C4C4C;
     background-color: #fff;
-    border-right: 0;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
     -webkit-transition: width .175s ease-in;
     -moz-transition: width .175s ease-in;
     -ms-transition: width .175s ease-in;
@@ -1080,12 +1085,16 @@ label {
     padding: 6px 15px;
     background-color: #fff;
     border: none;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
     border-radius: 0;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
     -webkit-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
     -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
     transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    /* -webkit-appearance: none; */
 }
 /*.form-control, output {
     font-size: 14px;
@@ -1122,6 +1131,11 @@ label {
     padding: 10px 10px 0;
     color: #fff !important;
 }
+.share-btn-title {
+    position: relative;
+    bottom: 5px;
+    margin-right: 4px;
+}
 #building-help {
     top: 88px;
     right: 120px;
@@ -1135,10 +1149,12 @@ label {
     z-index: 1;
     display: block;
     left: auto;
-    right: 70px;
+    right: 66px;
     top: 88px;
     padding: 5px;
     height: 20px;
+    background-color: #e61d25;
+    border: 1px solid #e61d25;
 }
 #share-btn:hover {
     cursor: pointer;
@@ -1224,8 +1240,8 @@ label {
   background: #e61c24;
 }
 .sub-layers-container #close-filter {
-  padding: 15px 18px;
-  height: 53px;
+  padding: 18px 18px;
+  height: 48px;
   background-color: #A80C0D;
   font-size: 20px;
 }
@@ -1517,7 +1533,7 @@ menu-map {
 }
 .button.close {
     position: relative;
-    padding: 2px 7px 2px 7px;
+    padding: 2px 6px 2px 6px;
     margin-bottom: -24px;
     top: -35px;
     right: 10px;
@@ -1951,6 +1967,10 @@ body .dijitAlignClient {
   max-height: none;
   padding: 0;
 }
+.esri-layer-list__item-actions-list {
+  padding: 0 0 0 40px;
+  border-top: none;
+}
 .esri-layer-list.esri-widget ul li {
   font-size: inherit;
 }
@@ -1962,10 +1982,28 @@ body .dijitAlignClient {
     line-height: inherit;
     word-break: normal;
 }
+.esri-layer-list__item-action-title {
+    margin-left: 14px;
+    font-weight: 400;
+}
+.esri-layer-list.esri-widget ul li:active > .esri-layer-list__item-action-icon.esri-icon-up,
+.esri-layer-list.esri-widget ul li:active > .esri-layer-list__item-action-icon.esri-icon-down {
+  color: #e61d25;
+  font-weight: 600;
+}
 ul > li .esri-layer-list__item-title {
   color: #53565D;
-  padding-left: 18px;
-  /*font-weight: bold;*/
+  padding-left: 28px;
+}
+.esri-layer-list__item-actions-menu {
+    position: relative;
+    top: 6px;
+}
+.esri-layer-list__item-actions {
+    margin-top: 0;
+    padding: 0 15px;
+    padding-bottom: 5px;
+    background-color: #e9e9e9;
 }
 .esri-layer-list.esri-widget > ul > li  {
   flex: 1;
@@ -2046,35 +2084,41 @@ ul > li .esri-layer-list__item-title {
     margin: 0;
     padding: 0;
 }
+.esri-layer-list__item-toggle {
+    overflow: inherit;
+}
 .esri-icon-down-arrow:before {
     content: "\f107";
     font: normal normal normal 18px/1 FontAwesome;
-    color: #e61c24;
+    color: #2d2d2d;
+    font-size: 28px;
 }
 .esri-icon-left-triangle-arrow:before {
   content: "\f104";
   font: normal normal normal 18px/1 FontAwesome;
   color: #e61c24;
+  font-size: 28px;
 }
 .esri-icon-right-triangle-arrow:before {
     content: "\f105";
     font: normal normal normal 18px/1 FontAwesome;
     color: #e61c24;
+    font-size: 28px;
 }
 .esri-layer-list.esri-widget .esri-icon-down-arrow:before {
   position: absolute;
-  top: 12px;
-  left: 7px;
+  top: 6px;
+  left: 8px;
 }
 .esri-layer-list.esri-widget .esri-icon-right-triangle-arrow:before {
   position: absolute;
-  top: 12px;
+  top: 6px;
   left: 10px;
 }
 .esri-icon-visible:before, .esri-icon-non-visible:before {
   content: '';
   position: absolute;
-  left: 26px;
+  left: 36px;
   top: 12px;
   box-shadow: inset 0 0 1px rgba(0,0,0,.23);
   width: 18px;
@@ -2094,7 +2138,7 @@ ul > li .esri-layer-list__item-title {
   font-family: FontAwesome;
   content: "\f00c";
   position: absolute;
-  left: 29px;
+  left: 39px;
   top: 20px;
   font-size: 12px;
   color: #53565D;
@@ -2116,10 +2160,10 @@ ul > li .esri-layer-list__item-title {
   color: #53565d;
   border-bottom: 1px solid #e0e0e0;
   padding-left: 70px;
-  padding-right: 20px;
+  padding-right: 12px;
   padding-top: 6px;
   padding-bottom: 6px;
-  line-height: 34px;
+  line-height: 35px;
   margin-bottom: 0;
 }
 #sub-layer-list {
@@ -2337,7 +2381,7 @@ ul > li .esri-layer-list__item-title {
   }
   .esri-ui-corner .esri-compass.esri-widget {
     top: 77px;
-    right: 96px;
+    right: 100px;
   }
   #theme.sub-menu, #layers.sub-menu, #legend.sub-menu, #tools.sub-menu, #open-data.sub-menu {
     width: 368px;
@@ -2567,7 +2611,7 @@ ul > li .esri-layer-list__item-title {
   }
   .esri-ui-corner .esri-compass.esri-widget {
     top: 77px;
-    right: 46px;
+    right: 100px;
   }
   .button.close:hover, #build-data .button.close:hover {
     background-color: #C1272D;
@@ -2630,7 +2674,7 @@ ul > li .esri-layer-list__item-title {
     padding: 10px;
   }
   .button.close {
-    font-size: 12px;
+    font-size: 15px;
   }
   .top-nav.mobile-active,
   .top-nav {
@@ -2740,6 +2784,11 @@ ul > li .esri-layer-list__item-title {
     display: inline-block;
   }
 }
+@media only screen and (max-width: 720px) {
+  .share-btn-title {
+    display: none;
+  }
+}
 @media only screen and (min-width: 740px) {
   .themes-page-logo span {
     margin-right: 260px;
@@ -2763,6 +2812,26 @@ ul > li .esri-layer-list__item-title {
   border-radius: 2px;
 }
 
+.gartens-search .esri-widget-button,
+.gartens-search .esri-search .esri-search__container .esri-widget-button {
+  display: none;
+}
+.gartens-search.esri-search {
+    width: 100%;
+}
+.kindergartens-sidebar .esri-search .esri-search__container .esri-search__input {
+  padding: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border: 1px solid #c6c5c5;
+  height: 44px;
+  font-size: 17px;
+  border-radius: 2px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
 /* Tooltips styling for Popper.js */
 popper-content {
   border: none;
@@ -2774,4 +2843,53 @@ popper-content {
   background-color: #fff;
   border: none !important;
   z-index: 99999;
+}
+
+/* Material */
+.kindergartens-sidebar .mat-expansion-panel-body {
+  padding: 0;
+}
+.kindergartens-sidebar label {
+  padding-left: 0;
+}
+.kindergartens-sidebar .button.close .fa {
+    width: 18px;
+    height: 20px;
+}
+.kindergartens-sidebar .address.input-field {
+  margin-top: 10px;
+}
+.kindergartens-sidebar .mat-checkbox-frame {
+  border-width: 1px;
+  border-color: rgb(169, 169, 169);
+}
+.kindergartens-sidebar .mat-expansion-panel-header {
+  padding: 0;
+  padding-right: 108px;
+}
+.mat-checkbox-checked.mat-accent .mat-checkbox-background, .mat-checkbox-indeterminate.mat-accent .mat-checkbox-background {
+    background-color: #e61d25;
+}
+.mat-checkbox:not(.mat-checkbox-disabled).mat-accent .mat-checkbox-ripple .mat-ripple-element {background-color:rgba(230,28,36,.26)}
+
+.mat-expanded .mat-expansion-indicator {
+  height: 16px;
+}
+.mat-expansion-indicator {
+  height: 16px;
+  color: #e61d26;
+}
+.mat-expansion-indicator::after {
+  padding: 4px !important;
+}
+.kindergartens-sidebar .input-field {
+  position: relative;
+}
+.vp-select {
+  position: absolute;
+  top: 44px;
+  right: 15px;
+}
+.vp-select:after {
+  border-width: 0 1px 1px 0 !important;
 }

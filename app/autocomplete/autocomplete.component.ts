@@ -79,8 +79,8 @@ export class AutoCompleteComponent {
     }
 
     handleClick(event) {
-        var clickedComponent = event.target;
-        var inside = false;
+        let clickedComponent = event.target;
+        let inside = false;
         do {
             if (clickedComponent === this.elementRef.nativeElement) {
                 inside = true;
@@ -92,6 +92,5 @@ export class AutoCompleteComponent {
         }
         this.selectedIdx = -1;
     }
-
 
 }

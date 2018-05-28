@@ -68,7 +68,7 @@ export class MenuService {
       //alert("wrking 1")
       view.then((viewMap) => {
         this.subListWidget = this.mapService.initSubLayerListWidget(view, map);
-      })
+      });
       //this.subListWidget = this.mapService.initSubLayerListWidget(view, map);
       //console.log("SublayerLISTWIDGET", this.subListWidget);
       this.subListModeOff = false;

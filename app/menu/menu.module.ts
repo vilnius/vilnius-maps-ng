@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule }        from '@angular/forms';
 
 import { MenuService }  from './menu.service';
+import { MenuToolsService }  from './menu-tools.service';
 import { MenuComponent }  from './menu.component';
 import { MenuLayersItvComponent, MenuSubLayersComponent, MenuLayersComponent, MenuLegendItvComponent, MenuLegendComponent, MenuToolsComponent, MenuThemesComponent } from '../menu';
 
@@ -24,6 +25,6 @@ import { NgDraggableModule } from 'angular-draggable';
     MenuLegendItvComponent, MenuLegendComponent
   ],
   exports: [MenuComponent],
-  providers: [MenuService]
+  providers: [MenuService, MenuToolsService]
 })
 export class MenuModule { }

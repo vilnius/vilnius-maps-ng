@@ -23,8 +23,9 @@ export class AppComponent implements OnInit {
           let themeId = themes[theme].id; //get unique theme id
           if (themeId === this.snapshotUrl) {
             let newTitle = themes[theme].name;
+            const description = themes[theme].description;
             newTitle ? (newTitle = newTitle + " / " + this.title) : (newTitle = this.title);
-            let newMeta = newTitle;
+            let newMeta = description ? description : newTitle;
             //current meta
             let metaElement = this.metaService.getTags('name=description');
             //add meta const name: MetaDefinition = {name: 'application-name', content: 'Name of my application'};
@@ -35,6 +36,14 @@ export class AppComponent implements OnInit {
           }
         }
       }
-    }
 
+      //create link tag for oembed
+      //TODO change to server side link tag
+      const currentUrl = window.location.href;
+      let link = document.createElement('link');
+      link.rel = 'alternate';
+      link.type = 'text/json+oembed';
+      link.href = `http://vilniausplanas.lt/oembed/?url=${currentUrl}`;
+      document.head.appendChild(link);
+  }
 }

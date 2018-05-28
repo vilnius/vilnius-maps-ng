@@ -41,6 +41,14 @@ export const Symbols: any = {
       width: 2
     }
   },
+  selectionPolygonDark: {
+    type: "simple-fill", // autocasts as new SimpleFillSymbol()
+    color: [0, 0, 0, 0.8],
+    outline: { // autocasts as new SimpleLineSymbol()
+      color: [0, 0, 0, 0.8],
+      width: 2
+    }
+  },
   selectionLine: {
     type: "simple-line", // autocasts as SimpleLineSymbol
     color: [193, 39, 45],
