@@ -25,3 +25,9 @@ export const BASEMAPS: any[] = [
     serviceName: "basemapEngineeringUrl" //based on Options.ts
   }
 ];
+
+export class Basemap {
+	id: string;
+	name: string;
+	serviceName: string;
+}

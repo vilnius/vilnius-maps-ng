@@ -8,8 +8,8 @@ import { IdentifyService } from '../services/identify/identify.service';
 import Extent = require("esri/geometry/Extent");
 import Point = require("esri/geometry/Point");
 
-import {Subject} from 'rxjs/Subject';
-
+import { Subject } from 'rxjs';
+import { first } from 'rxjs/operators';
 
 @Injectable()
 export class PointAddRemoveService {
@@ -19,7 +19,10 @@ export class PointAddRemoveService {
   identifyPointCoordinates: any;
 
   private pointObs = new Subject();
-  pointItem = this.pointObs.asObservable();
+  pointItem = this.pointObs.asObservable()
+		.pipe(
+			first()
+		);
 
   constructor(private _mapService: MapService, private projectsListService: ProjectsListService, private identifyService: IdentifyService) { }
 
@@ -34,7 +37,7 @@ export class PointAddRemoveService {
 
   removeSelectionLayers(): void {
     //find layer and remove it, max 4 layers: polygon, polyline, point, and additional point if scale is set from point to point in mxd
-    this._mapService.removeSelectionLayers(this.map);
+    this._mapService.removeSelectionLayers();
   }
 
   //NEW method selection on point
@@ -45,26 +48,18 @@ export class PointAddRemoveService {
         return layer;
       }
     });
-    //console.log("layer found", layer, number);
-    //do not neet to call queryResultsToGraphic, call selectionResultsToGraphic instead
-    //this.queryResultsToGraphic(map, feature, layer, number);
+    //do not need to call queryResultsToGraphic, call selectionResultsToGraphic instead
     this._mapService.selectionResultsToGraphic(map, feature, layer["0"].maxScale, layer["0"].minScale, layer, number);
   }
 
   //selection on point, polygon or polyline
   showSelectionGraphicCommon(feature, map, view, projectsLayer, number, geometryTypes) {
-    //console.log("projectsLayer", projectsLayer);
-    let layer = projectsLayer.sublayers.items.filter(layer => {
+    projectsLayer.sublayers.items.filter(layer => {
       if (layer.id === feature.subLayerId) {
         return layer;
       }
     });
-    //console.log("layer found", layer, number);
-    //console.log("feature sent", feature);
     return this.searchProjects(feature, map, view, projectsLayer, geometryTypes, number);
-    //do not neet to call queryResultsToGraphic, call selectionResultsToGraphic instead
-    //this.queryResultsToGraphic(map, feature, layer, number);
-    //this._mapService.selectionResultsToGraphic(map, feature, layer["0"].maxScale, layer["0"].minScale, layer, number);
   }
 
   getPointCoordinates() {
@@ -176,25 +171,22 @@ identifyAttributesByID(id) {
 //list item identify
 identifyAttributes(e: any) {
   let query = this.projectsListService.Query();
-
   let number: number = 0;
   //first graphics unique id
   let uniqueId: number;
-
   //add padding to point feature and get featureset attributes
   let pxWidth = this.view.extent.width / this.view.width;
   let padding = 10 * pxWidth;
   //let padding = 0;
   let qGeom;
-
   //TODO remove old graphic if exists
   this.view.graphics.items = [];
-  query.geometry = e.mapPoint;
+  const geometry = e.mapPoint;
   qGeom = new Extent({
-    "xmin": query.geometry.x - padding,
-    "ymin": query.geometry.y - padding,
-    "xmax": query.geometry.x + padding,
-    "ymax": query.geometry.y + padding,
+    "xmin": geometry.x - padding,
+    "ymin": geometry.y - padding,
+    "xmax": geometry.x + padding,
+    "ymax": geometry.y + padding,
     "spatialReference": this.view.extent.spatialReference
   });
   // use the extent for the query geometry
@@ -235,7 +227,9 @@ initPopup(results: any, pointXY) {
   let pt = new Point({
     x: pointXY[0],
     y: pointXY[1],
-    spatialReference: 3346
+    spatialReference: {
+      "wkid": 3346
+    }
   });
   this.openPopUp(results, pt);
 }

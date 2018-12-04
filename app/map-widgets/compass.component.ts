@@ -1,10 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 
-import Compass = require ("esri/widgets/Compass");
+import Compass = require("esri/widgets/Compass");
+
+import { MapService } from '../map.service';
 
 @Component({
-    selector: 'compass-map',
-    template: `
+  selector: 'compass-map',
+  template: `
     <ng-content></ng-content>
     `
 })
@@ -12,12 +14,19 @@ import Compass = require ("esri/widgets/Compass");
 export class CompassComponent implements OnInit {
   @Input() view: any;
 
+  constructor(private mapService: MapService) { };
+
   ngOnInit() {
-    let compass = new Compass({
+    const compass = new Compass({
       view: this.view
     });
 
     // adds the compass to the top left corner of the MapView
     this.view.ui.add(compass, "top-left");
+
+    (compass.container as HTMLElement).addEventListener("click", () => {
+      this.mapService.centerMapWithCompass();
+    });
   }
+
 }

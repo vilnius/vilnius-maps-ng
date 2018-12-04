@@ -1,14 +1,14 @@
 import { Component, OnInit, Input } from '@angular/core';
 
-import { MapWidgetsService } from './map-widgets.service';
+import { BasemapsService } from './basemaps.service';
 
 @Component({
   selector: 'basemap-toggle',
   styles: [`
       #basemap-button {
         position: absolute;
-        right: 20px;
-        bottom: 60px;
+        right: 10px;
+        bottom: 40px;
         z-index: 0;
         width: 100px;
         background: #fff;
@@ -43,15 +43,20 @@ import { MapWidgetsService } from './map-widgets.service';
         bottom: 45px;
       }
     }
+    @media only screen and (min-width: 840px) {
+      #basemap-button {
+        right: 20px;
+      }
+    }
     `],
   template: `
       <div id="basemap-button" class="box-shadow">
         <form>
-        <md-select placeholder="Pagrindas" [(ngModel)]="selectedValue" name="basemap" (ngModelChange)="toggleBasemap(selectedValue)">
-          <md-option *ngFor="let base of basemaps" [value]="base.id">
+        <mat-select placeholder="Pagrindas" [(ngModel)]="selectedValue" name="basemap" (ngModelChange)="toggleBasemap(selectedValue)">
+          <mat-option *ngFor="let base of basemaps" [value]="base.id">
             {{base.name}}
-          </md-option>
-        </md-select>
+          </mat-option>
+        </mat-select>
         </form>
       </div>
     `
@@ -64,17 +69,17 @@ export class BasemapToggle implements OnInit {
 
   basemaps: any[];
 
-  constructor(private mapWidgetsService: MapWidgetsService) {
-    this.basemaps = this.mapWidgetsService.returnBasemaps();
+  constructor(private basemapsService: BasemapsService) {
+    this.basemaps = this.basemapsService.returnBasemaps();
   }
 
   toggleBasemap(id: string) {
-    this.mapWidgetsService.toggleBasemap(id, this.view);
+    this.basemapsService.toggleBasemap(id, this.view);
   }
 
   ngOnInit() {
-    this.selectedValue = this.mapWidgetsService.returnActiveBasemap();
-    this.mapWidgetsService.filterBasemap( this.mapWidgetsService.returnActiveBasemap(), this.view);
-    
+    this.selectedValue = this.basemapsService.returnActiveBasemap();
+    this.basemapsService.filterBasemap( this.basemapsService.returnActiveBasemap(), this.view);
+
   }
 }

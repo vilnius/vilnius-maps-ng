@@ -4,14 +4,21 @@ import { MapOptions } from '../options';
 
 import Print = require('esri/widgets/Print');
 import Graphic = require('esri/Graphic');
-import Polygon = require('esri/geometry/Polygon');
+import Point = require('esri/geometry/Point');
 import GeometryService = require('esri/tasks/GeometryService');
-import SpatialReference = require('esri/geometry/SpatialReference');
+import TextSymbol = require('esri/symbols/TextSymbol');
 
 @Injectable()
 export class MenuToolsService {
 
+	// current selected tool containing draw feature
+	currentDrawTool = '';
+
   constructor() { }
+
+	setCurrentDrawTool(tool: string) {
+		return this.currentDrawTool = tool;
+	}
 
   initPrint(view) {
     return new Print({
@@ -28,7 +35,7 @@ export class MenuToolsService {
     });
   }
 
-  createAreaLabelGraphic(geometry, area, ended) {
+  createAreaLabelGraphic(geometry, area, ended, units = 'km²') {
     const endString = ended ? "" : " (užbaigti dvigubu paspaudimu)";
     return new Graphic({
       geometry: geometry.centroid,
@@ -37,14 +44,14 @@ export class MenuToolsService {
         color: "white",
         haloColor: "black",
         haloSize: "1px",
-        text: area.toFixed(4) + " km²" + endString,
+        text: `${area.toFixed(4)} ${units} ${endString}`,
         xoffset: 3,
         yoffset: 3,
         font: { // autocast as Font
           size: 10,
           family: "sans-serif"
         }
-      }
+      } as any as TextSymbol
     });
   }
 
@@ -55,7 +62,7 @@ export class MenuToolsService {
         x: points[0],
         y: points[1],
         spatialReference: view.spatialReference
-      },
+      } as Point,
       symbol: {
         type: "text",
         color: "white",
@@ -68,7 +75,7 @@ export class MenuToolsService {
           size: 10,
           family: "sans-serif"
         }
-      }
+      } as any as TextSymbol
     });
   }
 

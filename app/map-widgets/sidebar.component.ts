@@ -1,21 +1,23 @@
-import { Component, Input, OnInit, OnChanges, ElementRef, ViewChild, TemplateRef } from '@angular/core';
+import { Component, Input, OnChanges, ElementRef, ViewChild, ChangeDetectorRef, SimpleChanges } from '@angular/core';
 import { trigger, state, style, animate, transition } from '@angular/animations';
+
 import { Chart } from 'chart.js';
 
-import{ MapWidgetsService } from './map-widgets.service';
+import { MapWidgetsService } from './map-widgets.service';
 
 @Component({
   selector: 'sidebar-map',
   template: `
     <div [class.heat-sidebar]="sidebarHeatContent" class="col-xs-6 col-md-4 r-sidebar sidebar-right">
-      <p class="build-p">{{title}}</p>
-      <ng-content ></ng-content>
-      <div id="build-inner" class="inner sub-build">
-        <ng-container [ngTemplateOutlet]="sidebarHeatContent && heatContent"></ng-container>
-        <ng-container [ngTemplateOutlet]="heatMonthsChart"></ng-container>
-        <ng-container [ngTemplateOutlet]="heatClassesChart"></ng-container>
-        <ng-container [ngTemplateOutlet]="sidebarHeatContent && infoTemplate"></ng-container>
-      </div>
+			<perfect-scrollbar>
+				<ng-content ></ng-content>
+	      <div id="build-inner" class="inner sub-build">
+	        <ng-container [ngTemplateOutlet]="sidebarHeatContent && heatContent"></ng-container>
+	      </div>
+			</perfect-scrollbar>
+			<ng-container [ngTemplateOutlet]="heatMonthsChart"></ng-container>
+			<ng-container [ngTemplateOutlet]="heatClassesChart"></ng-container>
+			<ng-container [ngTemplateOutlet]="sidebarHeatContent && infoTemplate"></ng-container>
     </div>
 
     <ng-template #heatContent>
@@ -70,38 +72,41 @@ import{ MapWidgetsService } from './map-widgets.service';
     </ng-template>
     <ng-template #heatMonthsChart>
       <div class="heat-months-graphic sidebar-container" [@monthsState]="sidebarMonthsState">
-        <div class="build-p sidebar-header" (click)="closeSidaberGroup('months')"> <a href="javascript:void(0)" class="button close animate build-close">Atgal</a></div>
-        <div class="heat-title"><p>Mėnesiniai šilumos suvartojimai
-pagal mokėjimus už šilumą
+				<perfect-scrollbar>
+				<div class="build-p sidebar-header" (click)="closeSidaberGroup('months')"> <a href="javascript:void(0)" class="button close animate build-close">Atgal</a></div>
+        <div class="heat-title"><p>Vidutinis šilumos kiekis, tenkantis namo 1 m² naudingojo ploto, kWh/m²
 
-        <span class="heat-tip"><span
-          class="heat-highlight border-r-2"
-          [popper]="'Mėnesinis šilumos suvartojimas pagal mokėjimus už šilumą yra įtakojamas normatyvinio karšto vandens gyvatuko ir netolygaus gyventojų karšto vandens suvartojimo, todėl šis kiekis neturi sutapti su Faktiniu kiekvieno pastato išskaičiuotu vartojimu (žiūrėti į 1 grafą)'"
-          [popperTrigger]="'hover'"
-          [popperPlacement]="'bottom'"
-        >Paaiškinimas</span></span></p></div>
-        <canvas width="326" height="400" #mChart></canvas>
+        <span class="heat-tip">
+					<span
+	          class="heat-highlight border-r-2"
+	          [popper]="'Mėnesinis šilumos suvartojimas pagal mokėjimus už šilumą yra įtakojamas normatyvinio karšto vandens gyvatuko ir netolygaus gyventojų karšto vandens suvartojimo, todėl šis kiekis neturi sutapti su Faktiniu kiekvieno pastato išskaičiuotu vartojimu (žiūrėti į 1 grafą)'"
+	          [popperTrigger]="'hover'"
+						[popperForceDetection]="true"
+	          [popperPlacement]="'bottom'"
+	        >Paaiškinimas</span>
+				</span></p></div>
+				<div class="canvas-wrapper">
+					<canvas width="326" height="400" #mChart></canvas>
+				</div>
+				</perfect-scrollbar>
       </div>
     </ng-template>
     <ng-template #heatClassesChart>
       <div class="heat-classes-graphic sidebar-container" [@classesState]="sidebarClassesState">
-        <div class="build-p sidebar-header" (click)="closeSidaberGroup('classes')"> <a href="javascript:void(0)" class="button close animate build-close">Atgal</a></div>
+			<perfect-scrollbar>
+				<div class="build-p sidebar-header" (click)="closeSidaberGroup('classes')"> <a href="javascript:void(0)" class="button close animate build-close">Atgal</a></div>
 
-        <div class="heat-title"><p>Faktinio energijos vartojimo klasė (metinė)
-        <span class="heat-tip"><span
-          class="heat-highlight border-r-2"
-          [popper]="'Eliminuotos normatyvinio karšto vandens gyvatuko ir netolygaus gyventojų karšto vandens deklaravimo įtakos bei skirtingų šildymo sezonų trukmės ir skirtingų sezonų išorės temperatūrų įtakos'"
-          [popperTrigger]="'hover'"
-          [popperPlacement]="'bottom'"
-        >Paaiškinimas</span></span>
-        </p></div>
-        <canvas width="326" height="400" #cChart></canvas>
+        <div class="heat-title"><p>Faktinio energijos vartojimo klasė <br /><br /></p></div>
+				<div class="canvas-wrapper">
+					<canvas width="326" height="400" #cChart></canvas>
+				</div>
         <div class="heat-info"><p>Grafike vaizduojama paskutinio šildymo sezono <strong>{{heatingClassesData?.totalResults}}</strong> namų palyginimas pagal energijos
           <a
             href="./app/docs/metodika_2013.pdf"
             target="_blank"
-            [popper]="'Faktinio Energijos Vartojimo Klasė (FEVK) yra dydis, kuris parodo faktinį sunaudotos šilumos kiekį 1 m2 patalpų šildymui, eliminavus skirtingų šildymo sezonų įtakas pagal specialią skaičiavimo metodiką.  Šį dydį galima lyginti tarp skirtingų šildymo sezonų ir skirtingų ploto pastatų (šildymo sezonai turi skirtingą trukmę ir temperatūras, skaičiavimams imamas ne „normatyvinis“ gyvatukas, kiti deklaruoti dydžiai, o faktiniai dydžiai.  Pastatai pagal energijos vartojimą patalpų šildymui yra suskirstyti į 15 klasių. Mažiausiai šilumos patalpų šildymui vartoja 1-os klasės, daugiausiai 15 klasės pastatas.'"
+            [popper]="'Faktinio Energijos Vartojimo Klasė yra skirta įvertinti, kiek energijos pastatas faktiškai vartoja patalpų šildymui. Pagal energijos vartojimą patalpų šildymui pastatai suskirstyti į 15 klasių: pati mažiausia ir efektyviausia yra 1 klasė, pati didžiausia ir mažiausiai efektyvi yra 15 klasė. Faktinio energijos vartojimo klasės skaitinė reikšmė tai dydis, kurį skaičiuojant iš jo yra eliminuota skirtingo šildymo sezono trukmės įtaka, skirtingo šildymo sezono išorės oro temperatūros įtaka, skirtingo pastato šildymo ploto įtaka, todėl galima lyginti skirtingų įvairaus dydžio pastatų skirtingų šildymo sezonų klases tarpusavyje, to paties FEVK įvairiais metais, mėnesiais ir pan.'"
             [popperTrigger]="'hover'"
+						[popperForceDetection]="true"
             [popperPlacement]="'top'"
           >vartojimo klasę</a>
           <span
@@ -110,38 +115,44 @@ pagal mokėjimus už šilumą
             class="heat-highlight border-r-2 type-no"
             [popper]="popperContent"
             [popperTrigger]="'hover'"
+						[popperForceDetection]="true"
             [popperPlacement]="'top'"
             (click)="selectBuildingsByType()"
           > {{sidebarHeatContent?.TIPINIS_PR}}
-        </span> tipo namuose</p></div>
+        </span> tipo namuose</p>
+				<p><a	href="./app/docs/metodika_2013.pdf" target="_blank">Atsisiųskite metodiką</a></p></div>
         <popper-content #popperContent>
          <span *ngIf="!selectionByTypeState else message">Žemėlapyje filtruokite tik šio tipo namus</span>
          <ng-template #message>Naikinti šio tipo namų filtravimą</ng-template>
-       </popper-content>
+       	</popper-content>
+			 </perfect-scrollbar>
       </div>
     </ng-template>
     <ng-template #infoTemplate>
       <div class="sidebar-container" [@infoState]="sidebarInfoState">
-        <div class="build-p sidebar-header" (click)="closeSidaberGroup('info')"> <a href="javascript:void(0)" class="button close animate build-close">Atgal</a></div>
-        <div class="main-s-content">
-          <p>
-            <span>Prižiūrinti organizacija<br /></span>
-            {{sidebarHeatContent.PRIEZIURA}}
-          </p>
-          <p>
-            <span>Tipinių namų rūšiavimas<br /></span>
-            {{sidebarHeatContent.TIPINIS_PR}}
-          </p>
-          <p>
-            <span>Statybos metai<br /></span>
-            {{sidebarHeatContent.STATMETAI}}
-          </p>
-        </div>
-        <div class="heat-info">
-          <p><a href="http://www.vilnius.lt/lit/daugiabuciu_namu_atnaujinimas_modernizav/4234">Daugiabučių namų atnaujinimo tvarka</a></p>
-          <p>Šilumos suvartojimo duomenys - AB „Vilniaus šilumos tinklai“</p>
-          <p>Kilus klausimams kreiptis <a href="mailto:e.vicemeras@vilnius.lt">e.vicemeras@vilnius.lt</a></p>
-        </div>
+				<perfect-scrollbar>
+					<div class="build-p sidebar-header" (click)="closeSidaberGroup('info')"> <a href="javascript:void(0)" class="button close animate build-close">Atgal</a></div>
+	        <div class="main-s-content">
+	          <p>
+	            <span>Prižiūrinti organizacija<br /></span>
+	            {{sidebarHeatContent.PRIEZIURA}}
+	          </p>
+	          <p>
+	            <span>Tipinių namų rūšiavimas<br /></span>
+	            {{sidebarHeatContent.TIPINIS_PR}}
+	          </p>
+	          <p>
+	            <span>Statybos metai<br /></span>
+	            <ng-container *ngIf="sidebarHeatContent.STATMETAI; else yearUnknown" >{{sidebarHeatContent.STATMETAI}}</ng-container>
+	            <ng-template #yearUnknown >-</ng-template>
+	          </p>
+	        </div>
+	        <div class="heat-info">
+	          <p><a href="http://www.vilnius.lt/lit/daugiabuciu_namu_atnaujinimas_modernizav/4234">Daugiabučių namų atnaujinimo tvarka</a></p>
+	          <p>Šilumos suvartojimo duomenys - AB „Vilniaus šilumos tinklai“</p>
+	          <p>Kilus klausimams kreiptis <a href="mailto:savivaldybe@vilnius.lt">savivaldybe@vilnius.lt</a></p>
+	        </div>
+				</perfect-scrollbar>
       </div>
     </ng-template>
   `,
@@ -151,7 +162,7 @@ pagal mokėjimus už šilumą
       state('s-close', style({
         transform: 'translate3d(326px,0,0)'
       })),
-      state('s-open',   style({
+      state('s-open', style({
         transform: 'translate3d(0,0,0)'
       })),
       transition('s-open => s-close', animate('100ms ease-in')),
@@ -161,7 +172,7 @@ pagal mokėjimus už šilumą
       state('s-close', style({
         transform: 'translate3d(326px,0,0)'
       })),
-      state('s-open',   style({
+      state('s-open', style({
         transform: 'translate3d(0,0,0)'
       })),
       transition('s-open => s-close', animate('100ms ease-in')),
@@ -171,7 +182,7 @@ pagal mokėjimus už šilumą
       state('s-close', style({
         transform: 'translate3d(326px,0,0)'
       })),
-      state('s-open',   style({
+      state('s-open', style({
         transform: 'translate3d(0,0,0)'
       })),
       transition('s-open => s-close', animate('100ms ease-in')),
@@ -181,7 +192,7 @@ pagal mokėjimus už šilumą
       state('s-close', style({
         transform: 'translate3d(326px,0,0)'
       })),
-      state('s-open',   style({
+      state('s-open', style({
         transform: 'translate3d(0,0,0)'
       })),
       transition('s-open => s-close', animate('100ms ease-in')),
@@ -190,8 +201,7 @@ pagal mokėjimus už šilumą
   ]
 })
 
-export class SidebarComponent implements OnInit, OnChanges {
-  @Input() title;
+export class SidebarComponent implements OnChanges {
   @Input() mainSidebarState;
   @Input() sidebarHeatContent;
   @ViewChild('mChart') heatMonthsChart: ElementRef;
@@ -203,19 +213,19 @@ export class SidebarComponent implements OnInit, OnChanges {
   classesChart: Chart;
   lastHeatingYear: number;
 
-  innerState =  's-close';
-  sidebarMonthsState =  's-close';
-  sidebarClassesState =  's-close';
-  sidebarInfoState =  's-close';
+  innerState = 's-close';
+  sidebarMonthsState = 's-close';
+  sidebarClassesState = 's-close';
+  sidebarInfoState = 's-close';
 
   selectionByTypeState = false;
 
-  constructor(private mapWidgetsService: MapWidgetsService) { }
+	// chart labels for tooltip
+	chartLabels = [];
 
-  ngOnInit() {
-    !this.title && (this.title = 'Informacija');
-    //console.log('Tooltip', Tooltip);
-  }
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private mapWidgetsService: MapWidgetsService) { }
 
   selectBuildingsByType() {
     this.selectionByTypeState = !this.selectionByTypeState;
@@ -223,7 +233,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   openSidaberGroup(name: string) {
-    switch(name) {
+    switch (name) {
       case 'months':
         this.sidebarMonthsState = 's-open';
         break;
@@ -234,10 +244,12 @@ export class SidebarComponent implements OnInit, OnChanges {
         this.sidebarInfoState = 's-open';
         break;
     }
+
+    this.cdr.detectChanges();
   }
 
   closeSidaberGroup(name: string = '') {
-    switch(name) {
+    switch (name) {
       case 'months':
         this.sidebarMonthsState = 's-close';
         break;
@@ -248,15 +260,18 @@ export class SidebarComponent implements OnInit, OnChanges {
         this.sidebarInfoState = 's-close';
         break;
       default:
-        this.sidebarMonthsState =  's-close';
-        this.sidebarClassesState =  's-close';
-        this.sidebarInfoState =  's-close';
+        this.sidebarMonthsState = 's-close';
+        this.sidebarClassesState = 's-close';
+        this.sidebarInfoState = 's-close';
     }
 
     //diselect buildigns by type if their are selected
     if (this.selectionByTypeState) {
       this.selectBuildingsByType();
     }
+
+    // detect changes when closing sidebar group
+    this.cdr.detectChanges();
   }
 
   initHeatMonthsGraphic() {
@@ -264,13 +279,13 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.monthsChart && this.monthsChart.clear();
     const datasets = [
       {
-        label: `${this.lastHeatingYear}-${this.lastHeatingYear+1} m`,
+        label: `${this.lastHeatingYear}-${this.lastHeatingYear + 1} m.`,
         data: this.initMonthsDataset()[this.lastHeatingYear],
         backgroundColor: [
-            'rgba(150, 106, 236, 0.2)'
+          'rgba(150, 106, 236, 0.2)'
         ],
         borderColor: [
-            'rgba(150, 106, 236, 1)'
+          'rgba(150, 106, 236, 1)'
         ],
         borderWidth: 1,
         pointHoverBackgroundColor: 'rgba(255, 255, 255, 1)',
@@ -281,108 +296,111 @@ export class SidebarComponent implements OnInit, OnChanges {
         pointRadius: 5
       },
       {
-          label: `${this.lastHeatingYear-1}-${this.lastHeatingYear} m`,
-          data: this.initMonthsDataset()[this.lastHeatingYear-1],
-          backgroundColor: [
-              'rgba(153, 195, 146, 0.2)'
-          ],
-          borderColor: [
-              'rgba(153, 195, 146, 1)'
-          ],
-          borderWidth: 1,
-          pointHoverBackgroundColor: 'rgba(255, 255, 255, 1)',
-          pointHoverBorderColor: 'rgba(153, 195, 146, 1)',
-          pointBorderColor: 'rgba(255, 255, 255, 1)',
-          pointBackgroundColor: 'rgba(153, 195, 146, 1)',
-          pointHoverRadius: 5,
-          pointRadius: 5
+        label: `${this.lastHeatingYear - 1}-${this.lastHeatingYear} m.`,
+        data: this.initMonthsDataset()[this.lastHeatingYear - 1],
+        backgroundColor: [
+          'rgba(153, 195, 146, 0.2)'
+        ],
+        borderColor: [
+          'rgba(153, 195, 146, 1)'
+        ],
+        borderWidth: 1,
+        pointHoverBackgroundColor: 'rgba(255, 255, 255, 1)',
+        pointHoverBorderColor: 'rgba(153, 195, 146, 1)',
+        pointBorderColor: 'rgba(255, 255, 255, 1)',
+        pointBackgroundColor: 'rgba(153, 195, 146, 1)',
+        pointHoverRadius: 5,
+        pointRadius: 5
       },
       {
-          label: `${this.lastHeatingYear-2}-${this.lastHeatingYear-1} m`,
-          data: this.initMonthsDataset()[this.lastHeatingYear-2],
-          backgroundColor: [
-              'rgba(222, 135, 71, 0.2)'
-          ],
-          borderColor: [
-              'rgba(222, 135, 71, 1)'
-          ],
-          borderWidth: 1,
-          pointHoverBackgroundColor: 'rgba(255, 255, 255, 1)',
-          pointHoverBorderColor: 'rgba(222, 135, 71, 1)',
-          pointBorderColor: 'rgba(255, 255, 255, 1)',
-          pointBackgroundColor: 'rgba(222, 135, 71, 1)',
-          pointHoverRadius: 5,
-          pointRadius: 5
+        label: `${this.lastHeatingYear - 2}-${this.lastHeatingYear - 1} m.`,
+        data: this.initMonthsDataset()[this.lastHeatingYear - 2],
+        backgroundColor: [
+          'rgba(222, 135, 71, 0.2)'
+        ],
+        borderColor: [
+          'rgba(222, 135, 71, 1)'
+        ],
+        borderWidth: 1,
+        pointHoverBackgroundColor: 'rgba(255, 255, 255, 1)',
+        pointHoverBorderColor: 'rgba(222, 135, 71, 1)',
+        pointBorderColor: 'rgba(255, 255, 255, 1)',
+        pointBackgroundColor: 'rgba(222, 135, 71, 1)',
+        pointHoverRadius: 5,
+        pointRadius: 5
       }
     ];
     if (!this.monthsChart) {
       this.monthsChart = new Chart(el, {
         type: 'line',
         data: {
-            labels: ["Spalis", "Lapkritis", "Gruodis", "Sausis", "Vasaris", "Kovas", "Balandis"],
-            datasets
+          labels: ["Spalis", "Lapkritis", "Gruodis", "Sausis", "Vasaris", "Kovas", "Balandis"],
+          datasets
         },
         options: {
-            tooltips: {
-              caretSize: 0
-            },
-            legend:  {
-              display: true
-            },
-            scales: {
-                yAxes: [{
-                    scaleLabel: {
-                      display: true,
-                      labelString: 'kWh/m²'
-                    },
-                    ticks: {
-                      beginAtZero: false
-                    }
-                }],
-                xAxes: [{
-                    scaleLabel: {
-                      display: true,
-                      labelString: 'Mėnuo'
-                    },
-                    gridLines: {
-                      display: false
-                    },
-                    ticks: {
-                      beginAtZero: false
-                    }
-                }]
-            }
+          tooltips: {
+            caretSize: 0
+          },
+          legend: {
+            display: true
+          },
+          scales: {
+            yAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: 'kWh/m²'
+              },
+              ticks: {
+                beginAtZero: false
+              }
+            }],
+            xAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: 'Mėnuo'
+              },
+              gridLines: {
+                display: false
+              },
+              ticks: {
+                beginAtZero: false
+              }
+            }]
+          }
         }
       });
     } else {
       this.monthsChart.data.datasets = datasets;
       this.monthsChart.update();
     }
+
   }
 
   initMonthsDataset() {
     const dataset = {};
-    this.heatingMonthsData.forEach(set=> {
+    this.heatingMonthsData.forEach(set => {
       const att = set.attributes;
       dataset[att.SEZONAS] = [
-        att.SPAL_KW,
-        att.LAPKR_KW,
-        att.GRUOD_KW,
-        att.SAUS_KW,
-        att.VASAR_KW,
-        att.KOVAS_KW,
-        att.BALAN_KW
+        att.SPAL_KW ? parseFloat(att.SPAL_KW.toFixed(2)) : att.SPAL_KW,
+        att.LAPKR_KW ? parseFloat(att.LAPKR_KW.toFixed(2)) : att.LAPKR_KW,
+        att.GRUOD_KW ? parseFloat(att.GRUOD_KW.toFixed(2)) : att.GRUOD_KW,
+        att.SAUS_KW ? parseFloat(att.SAUS_KW.toFixed(2)) : att.SAUS_KW,
+        att.VASAR_KW ? parseFloat(att.VASAR_KW.toFixed(2)) : att.VASAR_KW,
+        att.KOVAS_KW ? parseFloat(att.KOVAS_KW.toFixed(2)) : att.KOVAS_KW,
+        att.BALAN_KW ? parseFloat(att.BALAN_KW.toFixed(2)) : att.BALAN_KW
       ];
     });
+    console.log('dataset', dataset);
     return dataset;
   }
 
   initClassesData() {
     const labels = this.heatingClassesData.classes.map(label => label + ' klasė');
+    console.log('%c labels', "font-size:18px; color: orange", this.heatingClassesData)
     const data = {
       labels,
       datasets: [{
-        label: null,
+        label: '',
         data: [],
         backgroundColor: [],
         borderColor: [],
@@ -391,7 +409,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     };
     const dataset = data.datasets[0];
     this.heatingClassesData.classes.forEach((name) => {
-      dataset.label = this.heatingClassesData.dataByClasses[name].label + ', viso pastatų: ';
+      this.chartLabels.push(this.heatingClassesData.dataByClasses[name].label + ', viso pastatų: ');
       dataset.data.push(this.heatingClassesData.dataByClasses[name].count);
       dataset.backgroundColor.push(this.heatingClassesData.dataByClasses[name].color);
       dataset.borderColor.push(this.heatingClassesData.dataByClasses[name].strokeColor);
@@ -403,10 +421,10 @@ export class SidebarComponent implements OnInit, OnChanges {
     const el = this.heatClassesChart.nativeElement.getContext('2d');
     this.classesChart && this.classesChart.clear();
     const data = this.initClassesData();
+    console.log('%c data', "font-size:18px; color: orange", data)
     if (!this.classesChart) {
       this.classesChart = new Chart(el, {
         type: 'bar',
-        data,
         options: {
           tooltips: {
             position: 'nearest',
@@ -414,19 +432,20 @@ export class SidebarComponent implements OnInit, OnChanges {
               //bug: cutting off long label
               //solution: split label and add beforeTitle
               label: function(tooltipItem, data) {
-                const label = data.datasets["0"].label.split(',')[1];
+                const label = ', viso pastatų: '
                 const result = data.datasets["0"].data[tooltipItem.index];
                 return label + result;
-             },
-              beforeTitle: function(tooltipItems, data) {
-               return data.datasets["0"].label.split(',')[0];
-             },
-              title: (tooltipItem, chart) => {
+              },
+              beforeTitle: (tooltipItems) => {
+                return this.chartLabels[tooltipItems[0].index].split(',')[0];
+              },
+							// add empty string
+              title: () => {
                 return '';
-              } //add empty string
+              }
             }
           },
-          legend:  {
+          legend: {
             display: false
           },
           scales: {
@@ -441,50 +460,65 @@ export class SidebarComponent implements OnInit, OnChanges {
             }]
             ,
             xAxes: [{
-                scaleLabel: {
-                  display: true,
-                  labelString: 'Faktinio energijos suvartojimo klasė'
-                },
-                offset: true,
-                gridLines: {
-                  offsetGridLines: false,
-                  display: false
-                },
-                barPercentage: 0.6,
-                ticks: {
-                  beginAtZero: false
-                }
+              scaleLabel: {
+                display: true,
+                labelString: 'Faktinio energijos suvartojimo klasė'
+              },
+              offset: true,
+              gridLines: {
+                offsetGridLines: false,
+                display: false
+              },
+              barPercentage: 0.6,
+              ticks: {
+                beginAtZero: false
+              }
             }]
           }
         }
       });
+      this.classesChart.data.labels = data.labels;
+      this.classesChart.data.datasets = data.datasets;
+			this.classesChart.update();
     } else {
-      this.classesChart.data = data;
       this.classesChart.update();
     }
+
   }
 
-  ngOnChanges() {
+  ngDoCheck() {
+    console.log('Do Check SIDEBAR', this.sidebarHeatContent);
+    this.cdr.detectChanges();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    console.log('OnChanges', changes);
     this.closeSidaberGroup();
-    //close main heat content while adding animation
+
+    // close main heat content while adding animation
     this.innerState = 's-close';
-    //console.log('%c Canvas', 'background: blue; color: white', this.heatMonthsChart);
+
+    // check if heat data is empty
     if (this.sidebarHeatContent && (this.mainSidebarState === 's-open')) {
       //add setTimeout  for main heat content animation
-      setTimeout(()=>{
+      setTimeout(() => {
         this.innerState = 's-open';
+        console.log("sidebar C 2", this.innerState, this.mainSidebarState);
+        this.cdr.detectChanges();
       }, 200);
       this.lastHeatingYear = this.sidebarHeatContent.SEZONAS;
-      //get data by months
-      this.mapWidgetsService.queryHeatingDataByMonths(this.sidebarHeatContent.SEZONAS, this.sidebarHeatContent.ID_NAMO).then(data=> {
+      // get data by months
+      this.mapWidgetsService.queryHeatingDataByMonths(this.sidebarHeatContent.SEZONAS, this.sidebarHeatContent.ID_NAMO).then(data => {
         this.heatingMonthsData = data;
         this.heatMonthsChart && this.initHeatMonthsGraphic();
       });
-      //get data by house type and heat classes
-      this.mapWidgetsService.queryHeatingDataByClasses(this.sidebarHeatContent.TIPINIS_PR, this.sidebarHeatContent.REITING).then(data=> {
+
+      // set data by house type and heat classes
+      this.mapWidgetsService.queryHeatingDataByClasses(this.sidebarHeatContent.TIPINIS_PR, this.sidebarHeatContent.REITING).then(data => {
         this.heatingClassesData = data;
         this.heatClassesChart && this.initHeatClassesGraphic();
       });
     }
+
   }
 }

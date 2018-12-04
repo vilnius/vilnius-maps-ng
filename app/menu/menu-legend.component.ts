@@ -1,49 +1,41 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 
-import { MapService } from '../map.service';
-import { MapOptions } from '../options';
-
-import  Legend = require ('esri/widgets/Legend');
+import { MenuService } from './menu.service';
 
 @Component({
-    selector: 'menu-legend',
-    template: `
-      <div>
-        <p>Sutartiniai ženklai:</p>
-        <a (click)=closeToggle() class="button close animate" title="Uždaryti">✕</a>
-        <div id="legend-list" class="inner">
-        </div>
-      </div>
+  selector: 'menu-legend',
+  template: `
+		<div class="menu-header">
+    	<p>Sutartiniai ženklai:</p>
+    	<a (click)=closeToggle() class="button close animate" title="Uždaryti">✕</a>
+		</div>
+		<perfect-scrollbar>
+			<div id="legend-list" #legend class="inner menu-nav-content"></div>
+		</perfect-scrollbar>
     `
 })
-export class MenuLegendComponent  implements OnInit, OnDestroy {
+export class MenuLegendComponent implements OnInit, OnDestroy {
+  @ViewChild('legend') legend: ElementRef;
+  legendWidget: any;
 
-  @Input() viewLegend: any;
-
-  constructor(private _mapService: MapService) {}
+  constructor(private menuService: MenuService) { }
 
   initLegend() {
-    return this.fetchLegend();
+    return this.menuService.fetchLegend(this.legend.nativeElement);
   }
 
   closeToggle() {
     window.location.hash = "#";
   }
 
-  //fetchLegend after subscribtion
-  fetchLegend() {
-    return new Legend({
-        view: this.viewLegend,
-        container: "legend-list"
-    });
-  }
-
   ngOnInit() {
-    this.initLegend();
+    this.legendWidget = this.initLegend();
+    //console.log('LEGEND', 	this.legendWidget)
   }
 
   ngOnDestroy() {
-    //this.subscription.unsubscribe();
+    //console.log('Destroy Legend');
+    this.legendWidget.destroy();
   }
 
 }

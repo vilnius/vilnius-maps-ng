@@ -1,4 +1,4 @@
-import {Inputs} from "./inputs";
+import { Inputs } from "./inputs";
 
 //Buffer inputs class
 export const BufferInputs: Inputs[] =  [

@@ -1,18 +1,36 @@
-import {Routes, RouterModule} from '@angular/router'
+import { Routes, RouterModule } from '@angular/router'
 
-import { MapDefaultComponent, MapBuildingsComponent, MapKindergartensComponent } from './themes';
-import { MapComponent } from './map.component';
+import forIn from 'lodash-es/forIn';
+
 import { ThemesComponent } from './themes.component';
+import { NotFoundComponent } from './not-found.component';
+import { MapViewComponent } from './components/common/map-view.component';
+import { MapOptions } from './options';
 
-const MAP_ROUTS: Routes = [
-  { path: '', component: ThemesComponent },
-  { path: 'projektai', component: MapComponent },
-  { path: 'pastatai', component: MapBuildingsComponent },
-  { path: 'darzeliai', component: MapKindergartensComponent },
-  //add page not found component
-  { path: '**', component: MapDefaultComponent }
-  // ,
-  // { path: '',  redirectTo: '/projektai', pathMatch: 'full' }
+let defaultThemesRoutes =  [];
+
+function addDefaultRoutes() {
+  forIn(MapOptions.themes, (layer) => {
+    if (!layer.custom && layer.production ) {
+			const id = layer.id;
+      defaultThemesRoutes.push({ path: id, loadChildren: './themes/default/default-theme.module#DefaultThemeModule' })
+    }
+  });
+};
+
+addDefaultRoutes();
+
+const MAP_ROUTES: Routes = [
+  { path: '', pathMatch: 'full', component: ThemesComponent },
+  { path: '', component: MapViewComponent, children: [
+		{ path: 'darzeliai', loadChildren: './themes/kindergartens/kindergartens.module#KindergartensModule' },
+		{ path: 'projektai', loadChildren: './themes/projects/projects.module#ProjectsModule' },
+		{ path: 'pastatai', loadChildren: './themes/buildings/buildings.module#BuildingsModule' },
+		...defaultThemesRoutes,
+	]},
+  //add page not found component (only in development)
+  // using expressjs in production mode and redirecting to home page
+  { path: '**', component: NotFoundComponent }
 ];
 
-export const Routing = RouterModule.forRoot(MAP_ROUTS);
+export const Routing = RouterModule.forRoot(MAP_ROUTES);

@@ -855,7 +855,6 @@ esriMeasurement .dijitContentPane,
 #legend.sub-menu, #layers.sub-menu {
 	height: auto;
 	overflow: hidden;
-	overflow-y: auto;
 	min-height: 100px;
 	max-height: -moz-calc(100% - 146px);
 	max-height: -webkit-calc(100% - 146px);
@@ -1594,7 +1593,7 @@ p.build-p:first-child {
 }
 
 #theme .sub-theme:hover {
-	opacity: 1 !important;
+	opacity: 0.7;
 }
 
 

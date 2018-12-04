@@ -6,7 +6,7 @@ import { MapOptions } from '../../../options';
 import Legend = require('esri/widgets/Legend');
 import on = require("dojo/on");
 
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'menu-legend-itv',
@@ -38,7 +38,8 @@ export class MenuLegendItvComponent implements OnInit, OnDestroy {
 
   subscription: Subscription;
   //layerlists checkbox status (on or off)
-  status: boolean = true;
+  //status is Subject<boolean>
+  status: any = true;
 
   constructor(private _mapService: MapService) { }
 

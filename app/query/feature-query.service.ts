@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
 
 import { MapService } from '../map.service';
-import { ProjectsFilterService } from '../projects-list/projects-filter.service';
 import { IdentifyService } from '../services/identify/identify.service';
 import { PointAddRemoveService } from '../query/point-add-remove.service';
 import { ProjectsListService } from '../projects-list/projects-list.service';
 
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable()
 export class FeatureQueryService {
@@ -32,14 +31,14 @@ export class FeatureQueryService {
   // Observable item stream
   expressionItem = this.expressionStObs.asObservable();
 
-  constructor(private _mapService: MapService, private projectsFilterService: ProjectsFilterService, private identify: IdentifyService, private projectsService: ProjectsListService, private pointAddRemoveService: PointAddRemoveService) { }
+  constructor(private _mapService: MapService, private identify: IdentifyService, private projectsService: ProjectsListService, private pointAddRemoveService: PointAddRemoveService) { }
 
   //create years Object from years for filtering  by year or
   //create themes Object from themes for filtering  by theme
   sendToMap(years: string[], themes: Number[]) {
     //console.log("REDUCE: ", years.reduce((acc, cur, i) => {acc[cur] = true; return acc;}, {}) )
-    this.deactivatedThemeFilters = themes.reduce((acc, cur, i) => { acc[cur.toString()] = true; return acc; }, {});
-    this.deactivatedYearFilters = years.reduce((acc, cur, i) => { acc[cur] = true; return acc; }, {});
+    this.deactivatedThemeFilters = themes.reduce((acc, cur) => { acc[cur.toString()] = true; return acc; }, {});
+    this.deactivatedYearFilters = years.reduce((acc, cur) => { acc[cur] = true; return acc; }, {});
   }
 
   // service command
@@ -218,7 +217,7 @@ export class FeatureQueryService {
     return queryStringClause;
   }
 
-  //filter by year
+  // filter by year
   yearFilterQuery(year) {
     //console.log("BENDRA UZKL", this.expressionSQL);
     //console.log("BENDRA UZKL", this.expressionCommon);
@@ -259,10 +258,9 @@ export class FeatureQueryService {
     }
   }
 
-  //identify projects return deffered object with results, init popup and selection graphics
+  // identify projects return deffered object with results, init popup and selection graphics
   identifyProjects(projectsDynamicLayer, identifyParams, map, view, uniqueListItemId = 0) {
     return this.identify.identify(projectsDynamicLayer.url).execute(identifyParams).then((response) => {
-      //console.log("RSP", response);
       //return only 1 result, TODO remove map method and logic, as we wil identify only one result
       let results;
       if (!uniqueListItemId) {
@@ -287,9 +285,6 @@ export class FeatureQueryService {
           results.forEach(result => {
             let expressionSQL = this.getExpressionSQL();
             if ((((layer.id === result.layerId) && (layer.maxScale < view.scale) && (view.scale < layer.minScale)) || ((layer.id === result.layerId) && (layer.minScale === 0))) && (this.checkResult(expressionSQL, result)) && (uniqueIdCount === 0)) {
-              //console.log(result.feature.attributes.UNIKALUS_NR, uniqueListItemId)
-              //if clicked on List item
-              //console.log(uniqueListItemId, result.feature.attributes.UNIKALUS_NR);
               if (uniqueListItemId && (uniqueListItemId == result.feature.attributes.UNIKALUS_NR)) {
                 //console.log(result.feature.attributes.UNIKALUS_NR, uniqueListItemId);
                 //console.log("LAYER", layer, layer.id, result.layerId);
@@ -316,13 +311,11 @@ export class FeatureQueryService {
         return results.map(result => {
           //get filters SQL query
           let expressionSQL = this.getExpressionSQL();
-          let pointCord;
 
           if ((uniqueID === result.feature.attributes.UNIKALUS_NR)) {
 
             let name = result.feature.attributes.Pavadinimas;
             let feature = result.feature;
-            let objectId = result.feature.attributes.OBJECTID;
             let layer = projectsDynamicLayer.sublayers.items.filter(layer => {
               if (layer.id === result.layerId) {
                 return layer;
@@ -340,10 +333,7 @@ export class FeatureQueryService {
             //start selection of graphics
             // this.pointAddRemoveService.showSelectionGraphicOnPoint(feature, this.map, this.view, this.projectsDynamicLayer, number);
             //we need to get point if we identify by clicking on list
-            this.pointAddRemoveService.showSelectionGraphicCommon(feature, map, view, projectsDynamicLayer, number, geometryTypes).then(point => {
-              pointCord = point;
-              //console.log("FOUND POINT", result);
-            });
+            this.pointAddRemoveService.showSelectionGraphicCommon(feature, map, view, projectsDynamicLayer, number, geometryTypes);
             number += 1;
             //add only 1 feature, we do not need dublicate
             //only return feature for layers that is visible in current scale
@@ -352,15 +342,12 @@ export class FeatureQueryService {
               if (this.checkResult(expressionSQL, result)) {
                 //activate list from map element
                 //TODO move to component
-                let currentFilterName: String = this.projectsService.getFilterListName();
-                //this.activateList(result.feature.attributes.UNIKALUS_NR, currentFilterName);
+                this.projectsService.getFilterListName();
 
                 feature.popupTemplate = {
                   title: `${name}`,
                   content: this.projectsService.getPopUpContent(result.feature.attributes)
                 };
-                //console.log("FOUND POINT 2", pointCord);
-                //console.log("SCALE POINT", feature)
                 return feature;
               }
             }

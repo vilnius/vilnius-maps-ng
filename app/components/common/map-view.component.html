@@ -1,0 +1,42 @@
+<mat-progress-bar #bar id="progress-load" mode="indeterminate"></mat-progress-bar>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12 map-default">
+      <div id="map" #mainContainer>
+        <div *ngIf="shareContainerActive" class="modal-content" id="share-container" (click)="shareToggle(); true; $event.stopPropagation();">
+        </div>
+        <div *ngIf="shareContainerActive" class="content box-shadow" id="inner-share-container">
+          <span id="close-filter" (click)="shareToggle(); true; $event.stopPropagation();">
+						<svg>
+          		<image class="svg" xlink:href="../../app/img/svg/close.svg" x="5" y="0" height="18px" width="18px"/>
+            </svg>
+          </span>
+          <p>Žemėlapio nuoroda:</p>
+          <input id="url-link" type="text" class="validate filter-input form-control" [value]="shareUrl" #inputSelect (click)="select(inputSelect)">
+					<button class='share-btn' (click)="copy()">Kopijuoti</button>
+					<div *ngIf="isCopiedToClipboard" hideElement class="alert alert-success alert-margin-top" role="alert">
+						<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						Nuoroda išsaugota
+					</div>
+				</div>
+
+        <div id="share-btn" class="animate" (click)="shareToggle(); true; $event.stopPropagation();">
+          <span class="share-btn-title">dalintis</span>
+					<svg>
+						<image class="svg" xlink:href="../../app/img/svg/share.svg" x="0" y="0" height="18px" width="18px"/>
+					</svg>
+        </div>
+
+				<common-widgets [view]="view"></common-widgets>
+
+      </div>
+    </div>
+
+		<router-outlet></router-outlet>
+
+  </div>
+  <maintenance-mod *ngIf="maintenanceOn"></maintenance-mod>
+</div>

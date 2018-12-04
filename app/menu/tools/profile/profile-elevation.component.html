@@ -1,0 +1,9 @@
+<div #chart>
+  <div class="heat-months-graphic sidebar-container" (mouseout)="removePointGraphic()">
+		<ng-content></ng-content>
+    <div class="canvas-wrapper" [ngClass]="{'canvas-full': fullscreen}">
+      <canvas id='profile-chart' #elevationChart></canvas>
+			<p>Reljefo profilis modeliuojamas remiantis Nacionalinės žemės tarnybos 2017 m. LR apskričių centrų (LiDAR_DR) duomenimis</p>
+    </div>
+  </div>
+</div>

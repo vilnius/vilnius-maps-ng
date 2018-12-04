@@ -1,18 +1,20 @@
 <div id="menu-top" class="mobile-menu" [class.mobile-active]="mobileActive" (click)="activateMenuBtn()">
   <i class="fa fa-navicon" aria-hidden="true"></i>
-  <a class="button close animate" (click)="closeToggle()" title="Uždaryti">✕</a>
+  <!-- <a class="button close animate" (click)="closeToggle()" title="Uždaryti">✕</a> -->
 </div>
 
 <!--Navigation content-->
-<menu-themes id="theme" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-themes>
+<menu-themes id="theme" class="sub-menu module animate color-layers mobile-active" [class.mobile-active]="mobileActive"></menu-themes>
 <menu-layers-itv *ngIf="themeName==='projektai'" id="layers" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-layers-itv>
 <menu-layers *ngIf="themeName!=='projektai'" id="layers" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-layers>
 <menu-legend-itv *ngIf="themeName==='projektai'" [viewLegend]="view" id="legend" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-legend-itv>
-<menu-legend *ngIf="themeName!=='projektai'" [viewLegend]="view" id="legend" class="sub-menu module animate color-layers default-legend" [class.mobile-active]="mobileActive"></menu-legend>
-<menu-tools (close)=onClose($event) id="tools" [viewTools]="view" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-tools>
+<menu-legend *ngIf="themeName!=='projektai'" id="legend" class="sub-menu module animate color-layers default-legend" [class.mobile-active]="mobileActive"></menu-legend>
+<menu-tools (close)=onClose($event) id="tools" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-tools>
 <div id="open-data" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive">
-  <p>Atviri duomenys / Open data:</p>
-  <a (click)="closeToggle()" class="button close animate" title="Uždaryti">✕</a>
+  <div class="menu-header">
+		<p>Atviri duomenys:</p>
+  	<a (click)="closeToggle()" class="button close animate" title="Uždaryti">✕</a>
+	</div>
   <div class="inner">
     <p>GIS atvirų duomenų tinklalapyje skelbiami (su galimybe peržiūrėti ir atsisiųsti) vieši Vilniaus miesto savivaldybės GIS duomenys. Duomenis galite atsisiųsti .csv, .kml, .shp formatais.</p>
     <p><a href="http://gis.opendata.lt/" target="_blank">www.gis.opendata.lt</a></p>
@@ -21,14 +23,20 @@
 </div>
 <!--End Navigation content-->
 
+<!-- Special ng-container for adding Profile Component -->
+<ng-container *ngComponentOutlet="ProfileToolContainerComponent"></ng-container>
+
 <!-- top menu -->
 <div class="modes" [class.active-tools]="toolsActive">
   <div id="top-menu" class="top-nav maps-nav col app animate col5 bottom small pad4x dark fill-denim animate" [class.mobile-active]="mobileActive">
+		<div id="menu-top" class="mobile-menu mobile-menu-close" (click)="activateMenuBtn()">
+			<a class="button close animate" (click)="closeToggle()" title="Uždaryti">✕</a>
+		</div>
     <a id="menu-theme"  class="cell line-right button nav-menu icon big" (click)="targetTheme()"><i class="fa fa-th" aria-hidden="true"></i>Temos</a>
     <a id="menu-layers" class="cell line-right button nav-menu icon big animate" (click)="targetLayers()"><i class="fa fa-list"></i> Sluoksniai</a>
     <a id="menu-legend" class="cell pad1y button hide-mobile nav-menu line-right col4 icon paint animate" (click)="targetLegend()"><i class="fa fa-th-large"></i> Žymėjimas </a>
     <a id="menu-tools" class="cell pad1y button nav-menu hide-mobile line-right col4 icon animate" (click)="targetTools()"><i class="fa fa-cog"></i> Įrankiai</a>
-    <a id="menu-open-data" class="cell pad1 button nav-menu hide-mobile col4 icon animate" (click)="targetOpenData()">Atviri duomenys</a>
+    <a id="menu-open-data" class="cell pad1 button nav-menu hide-mobile col4 icon animate" (click)="targetOpenData()"><i></i>Atviri duomenys</a>
   </div>
   <div id="menu-wrapper" [class.active-wrapper]="mobileActive"  (click)="activateMenuBtn()"></div>
 </div>
@@ -48,7 +56,7 @@
     </g>
     </svg>
   </span>
-  <h3>Papildomi visų temų sluoksniai</h3>
+  <h3>Papildomi sluoksniai</h3>
   <div id="sub-layers-content-list"></div>
 
 </div>

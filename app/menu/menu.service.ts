@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import {Subject} from 'rxjs/Subject';
+import { Subject } from 'rxjs';
+
+import Legend = require('esri/widgets/Legend');
 
 import { MapService } from '../map.service';
 
@@ -9,13 +11,13 @@ export class MenuService {
 
   private subLayersActive: boolean = false;
 
-  private subLayersObs = new Subject();
+  private subLayersObs = new Subject<boolean>();
 
   subLayersActivation = this.subLayersObs.asObservable();
 
   toggleNumber: number = 1;
   subListWidget: any;
-  queryParams: any
+  queryParams: any;
 
   //add boolean property to add subListWidget only once // TODO refactor logic
   subListModeOff: boolean = true;
@@ -37,6 +39,28 @@ export class MenuService {
     return this.subLayersState;
   }
 
+	// remove sublayers layers on routing
+	removeSublayersLayer() {
+		// change to false only when routing to new theme
+		// TODO remove sublayers completely
+		//this.subLayersState = false;
+
+		// do not show sublayers sidebar
+		this.subLayersActive = false;
+		this.subLayersObs.next(this.subLayersActive);
+
+		// remove layers
+		const map = this.mapService.returnMap();
+		const layer = map.findLayerById("allLayers");
+		//console.log('%c layer', 'color: green; font-size:20px', layer, map)
+		//layer.sublayers.removeAll();
+		layer.allSublayers.items.forEach(layer =>  {
+			if (!layer.sublayers) {
+				layer.visible = false;
+			}
+		});
+	}
+
   setSubLayersState() {
     this.subLayersState = true;
   }
@@ -46,75 +70,33 @@ export class MenuService {
 
   }
 
-  //update Sub layr list state after toggle button click
+  //update Sub layer list state after toggle button click
   updateSubState() {
     this.subLayersActive = !this.subLayersActive;
     this.subLayersObs.next(this.subLayersActive);
     return this.subLayersActive;
   }
 
-  //just subscribe to current state / not using anymore
-  sentSubState() {
-    this.subLayersObs.next(this.subLayersActive);
-  }
-
   addSubList() {
     let view = this.mapService.getView();
     let map = this.mapService.returnMap();
     //UPDATE hide dom instead
-    //map.layers.items = this.listModeSelection("allLayers", map.layers.items);
-    //this.subLayersActive ? this.subListWidget = this.mapService.initSubLayerListWidget(view, map) : "";
     if (this.subListModeOff && this.subLayersActive) {
-      //alert("wrking 1")
-      view.then((viewMap) => {
+      view.then(() => {
         this.subListWidget = this.mapService.initSubLayerListWidget(view, map);
       });
-      //this.subListWidget = this.mapService.initSubLayerListWidget(view, map);
-      //console.log("SublayerLISTWIDGET", this.subListWidget);
       this.subListModeOff = false;
-
-      //this.queryParams = this.mapService.returnQueryParams();
-      //console.log("this.queryParams", this.queryParams);
-
-      setTimeout(() => {
-        //open main item
-        this.subListWidget.operationalItems.items["0"].open = true;
-        this.subListWidget.operationalItems.items["0"].children.forEach(child => {
-          //console.log("child", child);
-          child.children.items.map(item => {
-            if (item.visible) {
-              if (item.children.items.length > 0) {
-                item.children.items.map(subItem => {
-                  if (subItem.visible) {
-                    item.open = true;
-                    child.open = true;
-                  }
-                });
-              } else {
-                child.open = true;
-                item.open = true;
-              }
-            }
-          });
-        });
-      }, 500);
-
     }
   }
 
   toggleSubListState() {
     this.subLayersActive = this.updateSubState();
-    //console.log("SUB", this.subLayersActive)
     if (this.toggleNumber % 2) {
-      //console.log('create');
       setTimeout(() => {
         this.addSubList();
         this.toggleNumber += 1;
-      }, 500);
+      }, 0);
     } else if (!(this.toggleNumber % 2) && (this.toggleNumber > 1)) {
-      //console.log('destroy');
-      //not using destroy method to avoid Memory leak (as destroy method doesn't remove events lsiteners completely)
-      //this.subListWidget.destroy();
       this.toggleNumber += 1;
     }
   }
@@ -143,7 +125,6 @@ export class MenuService {
            return item;
          }
       });
-      //console.log("NEW ITEMS", newItems);
       return newItems;
     } else if (layersType ==="allLayers" ) {
       newItems =  items.map((item)=>{
@@ -155,8 +136,17 @@ export class MenuService {
           return item;
         }
       });
-      //console.log("NEW ITEMS", newItems);
       return newItems;
     }
   }
+
+	// fetchLegend
+	fetchLegend(container: HTMLElement) {
+		const view = this.mapService.getView()
+	  return new Legend({
+	    view,
+	    container
+	  });
+	}
+
 }

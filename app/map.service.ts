@@ -1,22 +1,20 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/dom/ajax';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/operator/map';
-import { Subject } from 'rxjs/Subject';
+import { Observable, Subject } from 'rxjs';
+import { retry, shareReplay } from 'rxjs/operators';
+
+import { MapOptions } from './options';
 
 import Map = require("esri/Map");
 import Graphic = require("esri/Graphic");
 import Point = require("esri/geometry/Point");
-import Polyline = require("esri/geometry/Polyline");
-import Polygon = require("esri/geometry/Polygon");
 import SimpleMarkerSymbol = require("esri/symbols/SimpleMarkerSymbol");
 import SimpleLineSymbol = require("esri/symbols/SimpleLineSymbol");
 import SimpleFillSymbol = require("esri/symbols/SimpleFillSymbol");
 import Extent = require("esri/geometry/Extent");
-
+import Color = require("esri/Color");
+import Renderer = require("esri/renderers/Renderer");
 import MapView = require("esri/views/MapView");
 import GroupLayer = require("esri/layers/GroupLayer");
 import MapImageLayer = require("esri/layers/MapImageLayer");
@@ -25,50 +23,23 @@ import TileLayer = require("esri/layers/TileLayer");
 import GraphicsLayer = require("esri/layers/GraphicsLayer");
 import Basemap = require("esri/Basemap");
 import LayerList = require("esri/widgets/LayerList");
-import on = require("dojo/on");
-
-import IdentifyTask = require("esri/tasks/IdentifyTask");
-import IdentifyParameters = require("esri/tasks/support/IdentifyParameters");
-
-import { MapOptions } from './options';
-import { PopupTemplates } from './services/identify/popup-templates';
-import { ProjectsListService } from './projects-list/projects-list.service';
-
 import QueryTask = require("esri/tasks/QueryTask");
 import Query = require("esri/tasks/support/Query");
-import RelationshipQuery = require("esri/tasks/support/RelationshipQuery");
-
 
 @Injectable()
 export class MapService {
-  //array to identify by name selection graphic layers and remove them
-  private selectedGraphicNames: string[] = [];
-  private selectedGraphicCount: number = 0;
-
   //selection graphic layer array:
   private allGraphicLayers: any[] = [];
-
   private featureLayerArr: any[];
-
-  private projectsObs = new Subject();
-  projectsItem = this.projectsObs.asObservable();
 
   //suspend layers toggle (e.g. suspend layers while drawing with measure tools)
   suspendedIdentitication: boolean = false;
-
-  private mobile: boolean = false;
-
-  private themeName: string;
-
   private view: any;
 
   //visible layers
   visibleLayers: {};
-
   visibleSubLayerNumber: number = 0;
-
   private queryParams: any;
-
   map: any;
 
   //dynamic projects layer
@@ -81,47 +52,79 @@ export class MapService {
 
   //array of raster layers Name
   rasterLayers = [];
-
   //all layers for "allLayers"
   subDynamicLayers: any;
 
-  // Observable  for kindergartens
-  private kGartensObs = new Subject();
-  // Observable item stream
-  kGartensData = this.kGartensObs.asObservable();
+  // caching sublayer request
+  sublayersJsonCache$: Observable<any>
 
-  dataStore = {};
+  // cache every layer that has been initated duaring apps lifecycle
+  // use layers for themeServiceUrl
+  private cacheLayers = [];
 
-  constructor(private http: HttpClient, private projectsService: ProjectsListService) { }
+  // progress bar loader
+  progressBar: any;
+
+  constructor(private zone: NgZone, private http: HttpClient) { }
+
+  setProgressBar(bar): void {
+    this.progressBar = bar;
+  }
+
+  getProgressBar() {
+    return this.progressBar;
+  }
 
   initMap(options: Object): Map {
-    //return new Map(options);
-    return new Map();
+    this.map = new Map(options);
+    return this.map;
   }
+
   viewMap(map: Map): MapView {
-    this.view = new MapView({
-      //container: this.elementRef.nativeElement.firstChild, // AG good practis
-      container: 'map',
-      constraints: {
-        snapToZoom: true, //When true, the view snaps to the next LOD when zooming in or out. When false, the zoom is continuous.
-        rotationEnabled: true  // Disables map rotation
-      },
-      popup: {
-        dockEnabled: true,
-        dockOptions: {
-          position: 'bottom-left',
-          // Disables the dock button from the popup
-          buttonEnabled: true,
-          // Ignore the default sizes that trigger responsive docking
-          breakpoint: false
-        }
-      },
-      map: map,
-      //center: [25.266, 54.698], // lon, lat
-      zoom: 1,
-      extent: MapOptions.mapOptions.extent
+    // using runOutsideAngular instead of onPush change detection in component o avoid view ESRI UPDATES constanly initaiting change detection
+    this.zone.runOutsideAngular(() => {
+      const view = new MapView({
+        //container: this.elementRef.nativeElement.firstChild, // AG good practis
+        container: 'map',
+        constraints: {
+          snapToZoom: true, //When true, the view snaps to the next LOD when zooming in or out. When false, the zoom is continuous.
+          rotationEnabled: true  // Disables map rotation
+        },
+        popup: {
+          dockEnabled: true,
+          dockOptions: {
+            position: 'bottom-left',
+            // Disables the dock button from the popup
+            buttonEnabled: true,
+            // Ignore the default sizes that trigger responsive docking
+            breakpoint: false
+          }
+        },
+        map: map,
+        //center: [25.266, 54.698], // lon, lat
+        zoom: 1,
+        extent: MapOptions.mapOptions.extent
+      });
+      this.watchLayers(view);
+      this.view = view;
     });
     return this.view;
+  }
+
+  watchLayers(view) {
+    view.on("layerview-create", (event) => {
+			/**
+			 * check if layer was cached:
+			 * @prop {boolean} isInCache checfk if any value is cached,
+			 * cache only unqique layer
+			 * using some() instead of filter for efficiency
+			 */
+      const isInCache = this.cacheLayers.some(layer => layer.id === event.layer.id);
+      if (isInCache) {
+      } else {
+        this.cacheLayers.push(event.layer);
+      }
+    });
   }
 
   returnQueryParams() {
@@ -174,12 +177,10 @@ export class MapService {
   //suspend layers toggle (e.g. suspend layers while drawing with measure tools), define boolean type value, isntead of  this.suspendedIdentitication = !this.suspendedIdentitication
   suspendLayersToggle() {
     this.suspendedIdentitication = true;
-    //console.log(this.suspendedIdentitication);
   }
 
   unSuspendLayersToggle() {
     this.suspendedIdentitication = false;
-    //console.log(this.suspendedIdentitication);
   }
 
   getSuspendedIdentitication() {
@@ -187,15 +188,14 @@ export class MapService {
   }
 
   //for default themes
-  initDynamicLayer(layer: string, id: string = "itv", title: string = "itv", opacity = 1, sublayers = null, popupEnabled: boolean = true) {
+  initDynamicLayer(layer: string, id: string = "itv", title: string = "itv", opacity = 1, sublayers = null, popupEnabled = true) {
     return new MapImageLayer({
       url: layer,
       id: id,
-      outFields: ["*"],
       opacity,
       title,
-      popupEnabled, // if set fo false ignore on identify task
-      sublayers
+      sublayers,
+      listMode: 'show'
     });
   }
 
@@ -204,29 +204,25 @@ export class MapService {
     return new MapImageLayer({
       url: layer,
       id: id,
-      outFields: ["*"],
       opacity: opacity,
       title: name
     });
   }
 
-  initSubAllDynamicLayers(layer: string, id: string = "itv", name: string = "itv", opacity = 1, sublayers: array) {
+  initSubAllDynamicLayers(layer: string, id: string = "itv", name: string = "itv", opacity = 1, sublayers: any[]) {
     return new MapImageLayer({
       url: layer,
       id: id,
-      outFields: ["*"],
       opacity: opacity,
       sublayers: sublayers,
       title: name
     });
   }
 
-
-
   initGraphicLayer(id: number, scale: any = {}) {
     return new GraphicsLayer({
       id: "selection-graphic-" + id,
-      declaredClass: "selected",
+      //declaredClass: "selected",
       maxScale: scale["max"],
       minScale: scale["min"]
     });
@@ -243,22 +239,7 @@ export class MapService {
 
   initGraphic(type: string, name: String, attr: any, geom, scale: any = "", graphicLayer, size = '12px', style = 'solid') {
     return new Graphic({
-      // attributes: attr,
-      // geometry: geom,
-      // popupTemplate: {
-      //   title: this.projectsService.getPopUpTitle(attr),
-      //   //pass selection string to indentify that content is for selected graphic, so Observable must not be used
-      //   content: this.projectsService.getPopUpContent(attr, "selection")
-      // },
-      // symbol: this.initSymbol(type),
-      // layer: graphicLayer
-      ///attributes: attr,
       geometry: geom,
-      // popupTemplate: {
-      //   title: this.projectsService.getPopUpTitle(attr),
-      //   //pass selection string to indentify that content is for selected graphic, so Observable must not be used
-      //   content: this.projectsService.getPopUpContent(attr, "selection")
-      // },
       symbol: this.initSymbol(type, size, style),
       layer: graphicLayer
     });
@@ -274,16 +255,15 @@ export class MapService {
     });
   }
 
-  initSymbol(type: string, size: string, style: string) {
+  initSymbol(type: string, size: any, style: string) {
     let symbol;
     switch (type) {
       case "point":
         symbol = new SimpleMarkerSymbol({
-          color: [ 255, 255, 255, 0],
+          color: new Color([255, 255, 255, 0]),
           size,
           outline: { // autocasts as new SimpleLineSymbol()
-            //color: [251,215,140],
-            color: [181, 14, 18],
+            color: new Color([181, 14, 18, 1]),
             style,
             width: 3
           }
@@ -292,7 +272,7 @@ export class MapService {
       case "polyline":
         symbol = new SimpleLineSymbol({
           //color: [251,215,140],
-          color: [181, 14, 18],
+          color: new Color([181, 14, 18, 1]),
           style: "solid",
           width: 3
         });
@@ -302,7 +282,7 @@ export class MapService {
           //color: [251,215,140],
           outline: { // autocasts as new SimpleLineSymbol()
             //color: [251,215,140],
-            color: [181, 14, 18],
+            color: new Color([181, 14, 18, 1]),
             style: "solid",
             miterLimit: 1,
             width: 3
@@ -325,24 +305,22 @@ export class MapService {
     }
   }
 
-  initTiledLayer(layer: string, name: string, visible: boolean = true): TileLayer {
+  initTiledLayer(layer: string, name: string, visible = true): TileLayer {
     return new TileLayer({
       url: layer,
       id: name,
-      visible: visible
+      visible
     });
   }
 
-  initFeatureLayer(layer: string, opacity = 1 , index: number): FeatureLayer {
+  initFeatureLayer(layer: string, opacity = 1, index: number): FeatureLayer {
     return new FeatureLayer({
       url: layer,
       id: 'itv-feature-' + index,
       outFields: ["*"],
       opacity,
       //definitionExpression: 'Pabaiga=2018',
-      title: 'itv-feature-layer-' + index,
-      //add popupTemplate
-      //popupTemplate: PopupTemplates.itvTemplate
+      title: 'itv-feature-layer-' + index
     });
   }
 
@@ -358,8 +336,8 @@ export class MapService {
       renderer: {
         type: 'simple',  // autocasts as new SimpleRenderer()
         symbol: this.initAutocastSymbol(symbolType)
-      }
-    })
+      } as any as Renderer
+    });
   }
 
   initAutocastSymbol(type) {
@@ -368,17 +346,17 @@ export class MapService {
       case 'simple-marker':
         symbol = {
           type,  // autocasts as new SimpleMarkerSymbol()
-          color: [ 181, 14, 18, 0 ],
+          color: [181, 14, 18, 0.01],
           outline: {
             style: "dash-dot",
-            color: [ 181, 14, 18, 0 ]
+            color: [181, 14, 18, 0.01]
           }
         };
         break;
       case 'simple-line':
         symbol = {
           type,
-          color: [ 181, 14, 18 ],
+          color: [181, 14, 18],
           width: "1px",
           style: "long-dash-dot"
         };
@@ -386,10 +364,10 @@ export class MapService {
       case 'simple-fill':
         symbol = {
           type,
-          color: [255, 255, 255, 0 ],
+          color: [255, 255, 255, 0.01],
           outline: {  // autocasts as new SimpleLineSymbol()
             width: 1,
-            color: [181, 14, 18, 0 ]
+            color: [181, 14, 18, 0.01]
           }
         };
         break;
@@ -400,18 +378,36 @@ export class MapService {
   //http fetch for default themes
   fetchRequest(url: string) {
     return this.http.get(url + "/layers?f=pjson")
+      .pipe(
+        retry(3)
+      )
+  }
+
+  //http fetch for all sublayers and cache http request wioth shareReplay operator
+  fetchSublayersRequest(url: string) {
+    if (!this.sublayersJsonCache$) {
+      this.sublayersJsonCache$ = this.http.get(url + "/layers?f=pjson")
+        .pipe(
+          //retry(3),
+          shareReplay(1)
+        );
+      return this.sublayersJsonCache$;
+    }
+    return this.sublayersJsonCache$;
   }
 
   //http fetch for projects themes
   fetchRequestProjects(url: string) {
     return this.http.get(url + "?f=pjson")
+      .pipe(
+        retry(3)
+      )
   }
 
   //projects theme add features to mapPoint
   addFeaturesToMap() {
     //count feature layers and add to map
-    return this.fetchRequestProjects(MapOptions.themes.itvTheme.layers.mapLayer).subscribe(json => {
-      //console.log("json", json)
+    return this.fetchRequestProjects(MapOptions.themes.itvTheme.layers.mapLayer).subscribe((json: any) => {
       const layersCount = json.layers.length;
       //create layers arr
       const featureLayerArr = this.createFeatureLayers(layersCount, MapOptions.themes.itvTheme.layers.mapLayer);
@@ -420,99 +416,108 @@ export class MapService {
   }
 
   addToMap(response, queryParams) {
-    response.subscribe(json => {
-      //console.log("json", json);
-      //jus create sub Layers array for allLayers
-      const sublayersArray = this.getSubDynamicLayerSubLayers(json.layers);
+		/**
+		 * check if layer is was cached:
+		 * @prop {array} cachedLayers - single value array
+		 * @prop {number} isInCache - 0 or 1
+		 */
+    const cachedLayers = this.cacheLayers.filter(layer => layer.id === 'allLayers');
+    const isInCache = cachedLayers.length;
 
-      //create layer and empty the sublayers object if this.queryParams allayers prop is not set
-      let subLayers = [];
-      if (queryParams.allLayers && (queryParams.identify === "allLayers")) {
-        subLayers = sublayersArray;
-      };
-      const layer = this.initSubAllDynamicLayers(MapOptions.mapOptions.staticServices.commonMaps, "allLayers", "Visų temų sluoksniai", 0.8, subLayers);
-      this.map.add(layer);
+    if (!isInCache) {
+      response.subscribe(json => {
+        //jus create sub Layers array for allLayers
+        const sublayersArray = this.getSubDynamicLayerSubLayers(json.layers, true);
+
+        //create layer and empty the sublayers object if this.queryParams allayers prop is not set
+        let subLayers = [];
+        if (queryParams.allLayers && (queryParams.identify === "allLayers")) {
+          subLayers = sublayersArray;
+        };
+        const layer = this.initSubAllDynamicLayers(MapOptions.mapOptions.staticServices.commonMaps, "allLayers", "Pagalbiniai sluoksniai", 0.8, subLayers);
+        this.map.add(layer);
+        //check other url params if exists
+        //activate layer defined in url query params
+        this.activateLayersVisibility(this.view, queryParams, this.map);
+      });
+    } else {
+      this.map.add(cachedLayers[0]);
 
       //check other url params if exists
       //activate layer defined in url query params
       this.activateLayersVisibility(this.view, queryParams, this.map);
-    });
+    }
+
   }
 
-  pickMainThemeLayers(response, layer, key, queryParams, popupEnabled, groupLayer) {
-    response.subscribe(json => {
-      //add dyn layers
-      //console.log("snapshotUrl", snapshotUrl.path);
-      let sublayersArray = this.getSubDynamicLayerSubLayers(json.layers);
-      let dynamicLayer = this.initDynamicLayer(layer.dynimacLayerUrls, key, layer.name, layer.opacity, sublayersArray, popupEnabled)
-      //for Layerlist 4.4 API bug fix
+
+	/**
+	 * init specific theme layers
+	 * @param {number} groupLayer = create group layer for custom themes
+	 */
+  pickMainThemeLayers(layer, key, queryParams, popupEnabled = true, groupLayer: any = false) {
+		/**
+		 * check if layer is was cached:
+		 * @prop {array} cachedLayers - single value array
+		 * @prop {number} isInCache - 0 or 1
+		 */
+    const cachedLayers = this.cacheLayers.filter(layer => layer.id === key);
+    const isInCache = cachedLayers.length;
+    if (!isInCache) {
+      const response = this.fetchRequest(layer.dynimacLayerUrls);
+      response.subscribe(
+        (json: any) => {
+          if (!json.error) {
+            // add dyn layers
+            let sublayersArray = this.getSubDynamicLayerSubLayers(json.layers);
+            let dynamicLayer = this.initDynamicLayer(layer.dynimacLayerUrls, key, layer.name, layer.opacity, sublayersArray, popupEnabled)
+
+            //for Layerlist 4.4 API bug fix
+            if (groupLayer) {
+              groupLayer.add(dynamicLayer);
+            } else {
+              this.map.add(dynamicLayer);
+            }
+
+            //check other url params if exists
+            //activate layer defined in url query params
+            this.activateLayersVisibility(this.view, queryParams, this.map);
+
+            //check for type raster and push to array
+            json.layers.forEach((layer) => {
+              if (layer.type === "Raster Layer") {
+                this.rasterLayers.push(layer.name);
+              }
+            });
+          }
+
+        },
+        err => console.error(`VP dyamic layer not loaded`, err)
+      );
+    } else {
       if (groupLayer) {
-        groupLayer.add(dynamicLayer);
+        groupLayer.add(cachedLayers[0]);
       } else {
-        this.map.add(dynamicLayer);
+        this.map.add(cachedLayers[0]);
       }
 
       //check other url params if exists
       //activate layer defined in url query params
       this.activateLayersVisibility(this.view, queryParams, this.map);
+    }
 
-      //check for type raster and push to array
-      json.layers.forEach((layer) => {
-        if (layer.type === "Raster Layer") {
-          this.rasterLayers.push(layer.name);
-        }
-      })
-    });
-  }
-
-  //queryRelatedData of feature layer
-  queryRelationship(featureLayer, queryString = '', relationsID) {
-    const queryTask = this.addQueryTask(featureLayer.url + '/0');
-    //console.log(arguments);
-    const relationshipQuery = new RelationshipQuery();
-    relationshipQuery.relationshipId = 0;
-    relationshipQuery.outFields = ["*"];
-    relationshipQuery.objectIds = [relationsID];
-    relationshipQuery.returnGeometry = false;
-    //relationshipQuery.definitionExpression = 'GARDEN_ID=' + relationsID;
-    queryTask.executeRelationshipQuery(relationshipQuery).then((results) => {
-    //console.log('R QUERY', results[relationsID.toString()].features["0"].attributes.LABEL);
-    });
-  }
-
-  //get All Data
-  getAllQueryData(urlStr: string, name: string, outFields) {
-    let query = this.addQuery();
-    const queryTask = this.addQueryTask(urlStr);
-    //console.log(arguments);
-    //get all data
-    query.where = "1=1";
-    query.outFields = outFields;
-    query.returnGeometry = false;
-    return queryTask.execute(query).then((result) => {
-      this.dataStore[name] = result.features.map(feature => feature.attributes);
-      this.kGartensObs.next(this.dataStore);
-    }, (error) => { console.error(error); });
   }
 
   //run query by geometry
   runQueryByGeometry(urlStr: string, geometry: any) {
     const query = this.addQuery();
     const queryTask = this.addQueryTask(urlStr);
-    query.geometry  = geometry;
+    query.geometry = geometry;
     query.outFields = ['*'];
     query.returnGeometry = true;
     return queryTask.execute(query).then((result) => {
       return result;
     }, (error) => { console.error(error); });
-  }
-
-  getArrayByUniqueValue(array, valueName) {
-    //return array.filter((data, index, arr) => data )
-  }
-
-  returnAllQueryData() {
-    return this.dataStore;
   }
 
   pickCustomThemeLayers(response, layer, key, queryParams, groupLayer, serviceKey, symbolType = 'simple-fill') {
@@ -541,12 +546,12 @@ export class MapService {
   createFeatureLayers(layersNumber: number, url: String) {
     let i = layersNumber - 1, array = [];
     while (i >= 0) {
-      let featureUrl: String = url + "/" + i;
+      let featureUrl: string = url + "/" + i;
       array.push(this.initFeatureLayer(featureUrl, 1, i));
       i -= 1;
     }
+
     this.featureLayerArr = array;
-    //console.log(array);
     return array;
   }
 
@@ -554,8 +559,7 @@ export class MapService {
     return this.featureLayerArr;
   }
 
-  removeSelectionLayers(map: any): void {
-    //console.log("allGraphicLayers", this.allGraphicLayers)
+  removeSelectionLayers(): void {
     if (this.allGraphicLayers.length > 0) {
       //remove all graphic from map
       this.allGraphicLayers.forEach(graphic => {
@@ -564,18 +568,22 @@ export class MapService {
       });
       this.allGraphicLayers = [];
     }
+
   }
 
   initSelectionGraphic(result, scale, graphicLayer) {
     if (result.geometry.type === "point") {
       return this.initGraphic("point", "selected-feature", result.attributes, result.geometry, scale, graphicLayer);
     }
+
     if (result.geometry.type === "polyline") {
       return this.initGraphic("polyline", "selected-feature", result.attributes, result.geometry, scale, graphicLayer);
     }
+
     if (result.geometry.type === "polygon") {
       return this.initGraphic("polygon", "selected-feature", result.attributes, result.geometry, scale, graphicLayer);
     }
+
   }
 
   //selection results to graphic by creating new graphic layer
@@ -583,29 +591,20 @@ export class MapService {
     // let graphicLayer
     let graphicLayer;
     let graphic;
-    //set opacity
-    //layer.opacity = 0.9;
-    //console.log(maxScale);
     graphicLayer = this.initGraphicLayer(number, { max: maxScale, min: minScale });
     this.allGraphicLayers.push(graphicLayer);
-
-    //console.log("graphicLayer", graphicLayer)
     graphic = this.initSelectionGraphic(results, { max: maxScale, min: minScale }, graphicLayer);
     graphicLayer.add(graphic);
     map.add(graphicLayer);
-    //console.log("map", map)
 
     //watch layer creaton and asign class to svg graphcis
     graphicLayer.on("layerview-create", function(event) {
       // The LayerView for the layer that emitted this event
-      //event.layerView.graphicsView.graphics.items["0"].symbol.setAttribute("class", "selected-itv-point");
-      //event.layerView.graphicsView._frontGroup.parent.element.className += " selected-itv-point";
       //do not add class and css animation on mobile devices
       if (!this.mobile) {
         setTimeout(function() {
           let node = event.layerView.graphicsView._frontGroup.parent;
           node ? node.element.className += " selected-itv-point" : node;
-          //console.log(event.layerView.graphicsView._frontGroup.parent.element.className);
         }, 1000);
       }
     });
@@ -613,19 +612,28 @@ export class MapService {
 
   //on map component OnInit center and zoom based on URL query params
   centerZoom(view: any, params: any) {
-    let point: Point;
+    let point: any;
     point = [params.x ? parseFloat(params.x) : view.center.x, params.y ? parseFloat(params.y) : view.center.y];
-    //setTimeout(() => {
     view.zoom = params.zoom;
 
-    //center to point adn add spatialReference
+    //center to point and add spatialReference
     point = new Point({
       x: point[0],
       y: point[1],
-      spatialReference: 3346
+      spatialReference: {
+        "wkid": 3346
+      }
     });
+
     view.center = point;
   }
+
+  // center Map on Compass clicking
+  // init only once
+  centerMapWithCompass() {
+    this.centerZoom(this.view, { x: 581205.6135, y: 6064062.25 });
+  }
+
 
   //on map component OnInit read checked layers params (if exists) and activate  visible layers
   activateLayersVisibility(view: any, params: any, map: any) {
@@ -639,7 +647,6 @@ export class MapService {
           if (layer) {
             layer.on("layerview-create", (event) => {
               // The LayerView for the layer that emitted this event
-              //console.log(event)
               this.findSublayer(layer, params[param], map);
             });
 
@@ -651,19 +658,10 @@ export class MapService {
 
   findSublayer(layer: any, ids: string, map: any) {
     let idsArr = ids.split("!");
-    //console.log(idsArr);
     idsArr.forEach(id => {
       let sublayer = layer.findSublayerById(parseInt(id));
       sublayer ? sublayer.visible = true : "";
     })
-  }
-
-  getLisProjects(projects): void {
-    this.projectsObs.next(projects);
-  }
-
-  isMobileDevice(mobile: boolean) {
-    this.mobile = mobile;
   }
 
   //mobile check
@@ -671,16 +669,15 @@ export class MapService {
     var check = false;
     (function(a) {
       if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true;
-    })(navigator.userAgent || navigator.vendor || window.opera);
+    })(navigator.userAgent || navigator.vendor);
     return check;
   }
 
-  //createOperationalItems()
-
-  initLayerListWidget() {
+  initLayerListWidget(view, container: HTMLElement) {
     const listWidget = new LayerList({
-      container: "layer-list",
-      view: this.view,
+      //container: "layer-list",
+      container,
+      view,
       listItemCreatedFunction: this.updateListItem
     });
     return listWidget;
@@ -720,34 +717,31 @@ export class MapService {
   }
 
   initSubLayerListWidget(view, map) {
-    let subLayer = map.findLayerById("allLayers");
-    //onsole.log("SUB VIEW", view);
-    //console.log("all layers VIEW", subLayer);
-    //let mod = this.modifySubLayer(subLayer);
-    //console.log("MODIFY", mod);
+    //let subLayer = map.findLayerById("allLayers");
     return new LayerList({
       container: "sub-layers-content-list",
       view: view,
+      listItemCreatedFunction: this.updateListItem
       //operationalItems: this.getOperationalItems(subLayer)
-      operationalItems: [
-        {
-          layer: subLayer,
-          actionsOpen: true,
-          open: true,
-          view: view
-        }
-      ]
+      // operationalItems: [
+      //   {
+      //     layer: subLayer,
+      //     actionsOpen: true,
+      //     open: true,
+      //     view: view
+      //   }
+      // ] as any as Collection
     });
   }
 
   //modify subLayer and remove current theme layer
   modifySubLayer(subLayer) {
     let layerMod = subLayer;
-    //console.log("LAYERIS", subLayer)
     let items = subLayer.sublayers.items.filter(layer => {
       if (layer.title !== "Transportas / Dviračiai") {
         return layer;
       }
+
     });
     layerMod.sublayers = items;
     return layerMod;
@@ -758,7 +752,6 @@ export class MapService {
   getOperationalItems(layer) {
     //operational item type Array<any> or any[]
     let operationalItems: Array<any> = [];
-    //console.log(layer.sublayers.items)
     layer.sublayers.items.forEach(layer => {
       //operational item's object
       let innerItem = {
@@ -776,17 +769,8 @@ export class MapService {
     return new Basemap({
       baseLayers: layersArray,
       title: "Pagrindo žemėlapiai",
-      id: "customBasempa"
+      id: "customBasemap"
     });
-  }
-
-  //get URL theme name from ActivatedRoute
-  getThemeName(name) {
-    this.themeName = name;
-  }
-
-  returnThemeName() {
-    return this.themeName;
   }
 
   //validate ArcGis date string
@@ -805,13 +789,11 @@ export class MapService {
 
     for (let resultAtr in attributes) {
       if (attributes.hasOwnProperty(resultAtr)) {
-        //console.log(resultAtr);
-        if (!(resultAtr == "OBJECTID" || resultAtr == "layerName" || resultAtr == "SHAPE" || resultAtr == "SHAPE.area" || resultAtr == "Shape.area" || resultAtr == "SHAPE.STArea()" || resultAtr == "Shape" || resultAtr == "SHAPE.len" || resultAtr == "Shape.len" || resultAtr == "SHAPE.STLength()" || resultAtr == "SHAPE.fid" ||
+        if (!(resultAtr == "OBJECTID" || resultAtr == "layerName" || resultAtr == "SHAPE" || resultAtr == "SHAPE.area" || resultAtr == "OID" || resultAtr == "Shape.area" || resultAtr == "SHAPE.STArea()" || resultAtr == "Shape" || resultAtr == "SHAPE.len" || resultAtr == "Shape.len" || resultAtr == "SHAPE.STLength()" || resultAtr == "SHAPE.fid" ||
           resultAtr == "Class value" || resultAtr == "Pixel Value" || resultAtr == "Count_" //TEMP check for raster properties
         )) { //add layers attributes that you do not want to show
           //AG check for date string
           if (this.isValidDate(attributes[resultAtr], reg)) {
-            let attributeDate = attributes[resultAtr];
             content += "<p><span>" + resultAtr + "</br></span>" + attributes[resultAtr].replace(reg, '$1-$2-$3') + "<p>";
           } else {
             var attributeResult = attributes[resultAtr];
@@ -834,102 +816,6 @@ export class MapService {
     return content;
   }
 
-  getVisibleLayersIds(view) {
-    //ids will have 2 properties: 'identificationsIds' (layers to be identified) and 'visibilityIds' (all visible layers that must be checked and visible depending on mxd settings or user activated layers)
-    let ids: any = {};
-    ids["identificationsIds"] = {};
-    ids["visibilityIds"] = {};
-    let viewScale = view.scale;
-    //console.log("VIEW", view);
-    //console.log("layerViews", view.layerViews)
-    view.layerViews.items.map(item => {
-      //TODO refactor mapDefaultService and mapService, for projects theme get VisibleLayers Ids only for alllayers service
-      if (item.layer.id === "allLayers") {
-        //small fix: add layer id that doen't exist, for example 999, in order to prevent all layers identification when all lists are turned off
-        ids.identificationsIds[item.layer.id] = [999];
-        ids.visibilityIds[item.layer.id] = [999];
-        //console.log("IDS", item)
-        //do not identify layer if it is Raster
-        if ((item.visible) && (!item.layer.isRaster) && (item.layer.sublayers)) {
-          //UPDATE: identify raster layers as well
-          //if (item.visible) {
-          let subLayers = item.layer.sublayers.items;
-          //console.log("subLayer", subLayers);
-          subLayers.map((subLayer) => {
-            let minScale = subLayer.minScale;
-            let maxScale = subLayer.maxScale;
-            //add number to fit viewScale, because 0 in Esri logic means layer is not scaled
-            ((minScale === 0)) ? minScale = 99999999 : minScale;
-
-            // console.log(subLayer.minScale , viewScale , subLayer.maxScale)
-            // console.log(minScale , viewScale , maxScale)
-            //if layer is visible and in view scale
-            if (subLayer.visible) {
-              ids.visibilityIds[item.layer.id].push(subLayer.id);
-              if ((maxScale < viewScale) && (viewScale < minScale)) {
-                //check if sublayer has subsublayers
-                if (subLayer.sublayers) {
-                  //console.log("subsubLayer", subLayers);
-                  //3 layer if exist
-                  let subsublayers = subLayer.sublayers.items;
-                  subsublayers.map(subsublayer => {
-                    let subMinScale = subsublayer.minScale;
-                    let subMaxScale = subsublayer.maxScale;
-                    ((subMinScale === 0)) ? subMinScale = 99999999 : subMinScale;
-                    //if layer is visible and in view scale
-                    if (subsublayer.visible) {
-                      ids.visibilityIds[item.layer.id].push(subsublayer.id);
-                      if ((subMaxScale < viewScale) && (viewScale < subMinScale)) {
-                        //console.log("Sub subsubLayer", subLayers);
-
-                        if (subsublayer.sublayers) {
-                          //4 layer if exist
-                          let subsubsublayers = subsublayer.sublayers.items;
-                          subsubsublayers.map(subsubsublayer => {
-                            let subMinScale = subsubsublayer.minScale;
-                            let subMaxScale = subsubsublayer.maxScale;
-                            ((subMinScale === 0)) ? subMinScale = 99999999 : subMinScale;
-                            //if layer is visible and in view scale
-                            if (subsubsublayer.visible) {
-                              ids.visibilityIds[item.layer.id].push(subsubsublayer.id);
-                              if ((subsubsublayer.visible) && (subMaxScale < viewScale) && (viewScale < subMinScale)) {
-                                //console.log("SubSUB subsubLayer", subsubsublayers);
-                                ids.identificationsIds[item.layer.id].push(subsubsublayer.id);
-
-                              }
-                            }
-                          });
-                        } else {
-                          //push id's if it has no sublayers
-                          ids.identificationsIds[item.layer.id].push(subsublayer.id);
-                        }
-                      }
-                    }
-                  });
-                }
-                //else push id
-                else {
-                  ids.identificationsIds[item.layer.id].push(subLayer.id);
-                }
-              }
-            }
-          })
-        }
-      }
-    })
-    //console.log("FINAL IDS", ids)
-    this.visibleLayers = ids;
-    return ids;
-  }
-
-  getVisibleSubLayerNumber(view: any) {
-    let ids: any = this.getVisibleLayersIds(view);
-    //console.log("ids", ids.identificationsIds);
-    ids.identificationsIds.allLayers ? this.visibleSubLayerNumber = ids.identificationsIds.allLayers.length - 1 : this.visibleSubLayerNumber = 0;
-    //console.log("visibleSubLayerNumber", this.visibleSubLayerNumber);
-    return this.visibleSubLayerNumber;
-  }
-
   //set itv theme dynamic projects layer
   setProjectsDynamicLayer(projectsDynamicLayer: any) {
     this.projectsDynamicLayer = projectsDynamicLayer;
@@ -945,12 +831,16 @@ export class MapService {
     this.layersStatusObs.next(isChecked);
   };
 
-  //layerlist 4.4 API bug fix, return sublayers array,TODO remove fix in 4.5 API
-  getSubDynamicLayerSubLayers(layers: Array<any>) {
+  /**
+	 * Layerlist 4.4 API bug fix, return sublayers array,TODO remove fix in 4.5 AP
+	 * @param {booelan} isSublayer - cache sublayers of all layers widget
+	 * initiate only once
+	 */
+  getSubDynamicLayerSubLayers(layers: Array<any>, isSublayer = false) {
     let sublayers = [];
     layers.forEach(item => {
       if (item.parentLayer) {
-        let currentSublayer = sublayers.forEach((layer, i) => {
+        sublayers.forEach((layer, i) => {
           if (layer.id === item.parentLayer.id) {
             sublayers[i].sublayers.push({
               id: item.id,
@@ -990,7 +880,6 @@ export class MapService {
         });
       }
     });
-    //console.log("sublayers", sublayers);
     sublayers.reverse().map(sublayer => {
       sublayer.sublayers.length === 0 ? sublayer.sublayers = null : sublayer.sublayers.reverse().map(subSublayer => {
         subSublayer.sublayers.length === 0 ? subSublayer.sublayers = null : subSublayer.sublayers.reverse().map(subSubSublayer => {
@@ -1001,8 +890,12 @@ export class MapService {
       });
       return sublayer;
     });
-    //console.log("sublayers", sublayers);
-    this.subDynamicLayers = sublayers;
+
+    //if sublayer add layers for all layers layerlist feature
+    if (isSublayer) {
+      this.subDynamicLayers = sublayers;
+    }
+
     return sublayers;
   }
 
@@ -1016,7 +909,7 @@ export class MapService {
   }
 
   addQueryTask(url: string) {
-    return new QueryTask(url);
+    return new QueryTask({ url });
   }
 
   //get exten by x  and y values arrays
@@ -1027,9 +920,8 @@ export class MapService {
       xmax: Math.max(...xArray) + 20,
       ymax: Math.max(...yArray) + 20,
       spatialReference: {
-				"wkid": 3346
-			}
+        "wkid": 3346
+      }
     });
   }
-
 }

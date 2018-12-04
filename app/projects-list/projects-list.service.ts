@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 
-import MapImageLayer = require("esri/layers/MapImageLayer");
-
 import QueryTask = require("esri/tasks/QueryTask");
 import Query = require("esri/tasks/support/Query");
 
-import {Subject} from 'rxjs/Subject';
-
+import { Subject } from 'rxjs';
+import { map, first } from 'rxjs/operators';
 
 @Injectable()
 export class ProjectsListService {
@@ -18,11 +16,13 @@ export class ProjectsListService {
   //using for direct viewing on map with hitTest method as well
   mainFilterCheck: String = 'word';
 
-  private galleryObs = new Subject();
-  galleryArr = this.galleryObs.asObservable();
-
-  private fullListObs = new Subject();
-  fullListItem = this.fullListObs.asObservable();
+	// FIXME remove subject, change to Osbervable or remove multiple conncection to Subject
+  private projectsSubject = new Subject<any>();
+  galleryArr = this.projectsSubject.asObservable();
+  fullListItem = this.projectsSubject.asObservable().pipe(
+      map(item => item.map(innerItem => { return { attributes: innerItem.attributes } })),
+			first()
+  );
 
   getProjects() {
     return this.projectsByExtent;
@@ -44,9 +44,9 @@ export class ProjectsListService {
     //return geometry in order to get popup and graphic on list click
     query.returnGeometry = true;
 
-    //if input value is empty asign to empty string, else make additiniol sql query
-    //UPDATED words are filtered same way if first letter is uppercase or lowercase
-    //TODO make search by word case insesitive
+    // if input value is empty asign to empty string, else make additiniol sql query
+    // UPDATED words are filtered same way if first letter is uppercase or lowercase
+    // TODO make search by word case insesitive
     let valueAutocomplete = inputValue.length > 0 ? "((Pavadinimas LIKE '%" + inputValue.charAt(0).toLowerCase() + inputValue.slice(1) + "%')" + " OR " + "(Pavadinimas LIKE '%" + inputValue.charAt(0).toUpperCase() + inputValue.slice(1) + "%'))" : "";
     query.outFields = ["*"];
     //check if query expression was set by filters
@@ -97,7 +97,8 @@ export class ProjectsListService {
     query.outFields = ["*"];
     let queryTask = this.QueryTask(urlStr);
     queryTask.execute(query).then((result) => {
-      this.fullListObs.next(result.features);
+      //this.fullListObs.next(result.features);
+      this.projectsSubject.next(result.features);
       return result.features;
     }, (error) => { console.error(error); });
   }
@@ -279,7 +280,8 @@ export class ProjectsListService {
 
     //push onto subject unless we are generating content for selection graphic
     //this.galleryObs.next([]); //return to destroy compontent // bug fix
-    selection === "selection" ? "" : this.galleryObs.next(galleryImages);
+    //selection === "selection" ? "" : this.galleryObs.next(galleryImages);
+    selection === "selection" ? "" : this.projectsSubject.next(galleryImages);
 
     // return string interpolation
     return `<div class="esri-popup-renderer">
