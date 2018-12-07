@@ -99,15 +99,18 @@ export class MapViewComponent implements OnInit {
     this.view.then((view) => {
       watchUtils.whenTrue(view, "updating", () => {
         //console.log('%c VIEW', ' color: green;font-size: 23px', this.view)
-        //console.log("watchUtils", arguments)
         this.el.nativeElement.querySelector('#progress-load').style.display = "block";
         const intervalProgress = setInterval(() => {
-          if (!this.view.updating) {
-            //console.log('%c intervalProgress', "font-size: 22px", intervalProgress);
-            clearInterval(intervalProgress);
-            this.el.nativeElement.querySelector('#progress-load').style.display = "none";
-            //console.log('%c intervalProgress end', "font-size: 22px", intervalProgress);
-          }
+					if (view) {
+						if (!view.updating) {
+							//console.log('%c intervalProgress', "font-size: 22px", intervalProgress);
+							clearInterval(intervalProgress);
+							this.el.nativeElement.querySelector('#progress-load').style.display = "none";
+							//console.log('%c intervalProgress end', "font-size: 22px", intervalProgress);
+						}
+
+					}
+
         }, 50)
       });
 
