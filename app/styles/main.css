@@ -2046,7 +2046,7 @@ ul>li .esri-layer-list__item-title,
 /*END NAVIGATION*/
 #loading-gif {
   width: 110px;
-  position: absolute;
+  position: fixed;
   top: 0;
   bottom: 0;
   margin: auto;
@@ -2852,7 +2852,7 @@ ul>li .esri-layer-list__item-title {
   }
 
   .module {
-    z-index: inherit;
+    z-index: initial;
   }
 
 
@@ -3030,9 +3030,11 @@ ul>li .esri-layer-list__item-title {
   #menu-tools {
     display: block;
   }
-
+	.module {
+	  z-index: 9;
+	}
   .module:target {
-    z-index: 15;
+    z-index: 9;
   }
 
   #building-help {
@@ -3694,12 +3696,12 @@ ul>li .esri-layer-list__item-title {
 .row.themes-component .themes-row a {
   color: #dadada;
   display: block;
-  padding: 60px 20px;
+  padding: 30px 10px;
 }
 
 @media only screen and (max-width: 480px) {
   .col-sm-3.themes-row {
-    min-height: 260px;
+    min-height: 200px;
   }
 
   .themes-page-logo span {

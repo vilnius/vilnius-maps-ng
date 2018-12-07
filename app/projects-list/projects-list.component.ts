@@ -134,7 +134,6 @@ export class ProjectsListComponent implements OnInit, OnDestroy {
     this.removeSelectionLayers();
 
     // TODO remove old graphic if exists
-		console.log('VIEW Graphics', this.view.graphics)
     this.view.graphics.items = [];
     query.where = "UNIKALUS_NR=" + project.attributes.UNIKALUS_NR;
     query.outFields = ["*"];
@@ -164,8 +163,6 @@ export class ProjectsListComponent implements OnInit, OnDestroy {
 			}, (error) => { console.error(error); });
 
 		def.push(defferedList);
-		console.log('def', def, defferedList);
-
 
 		// TODO consider removing promise all, as we do not need it so far, we will get only one response, not using any other service idintification in projects theme so far.
 		// using dojo/promise/all function that takes multiple promises and returns a new promise that is fulfilled when all promises have been resolved or one has been rejected.
@@ -179,7 +176,6 @@ export class ProjectsListComponent implements OnInit, OnDestroy {
 		// filter empty response again (just in case) which was received after map method
 		resultsMerge = resultsMerge.filter(res => res);
 		this.pointAddRemoveService.pointItem.subscribe(point => {
-			console.log("POINT", point);
 			if (resultsMerge.length > 0) {
 				this.view.goTo({
 					target: point
@@ -189,6 +185,7 @@ export class ProjectsListComponent implements OnInit, OnDestroy {
 					location: point
 				});
 			}
+
 		});
 	}
 

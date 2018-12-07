@@ -1,5 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, Renderer2, ChangeDetectorRef
- } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, Renderer2, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from "@angular/router";
 import { trigger, state, style, animate, transition } from '@angular/animations';
 
@@ -94,7 +93,7 @@ import { Subscription } from 'rxjs';
       transition('s-close => s-open', animate('100ms ease-out'))
     ])
   ]//,
-	//changeDetection: ChangeDetectionStrategy.OnPush
+  //changeDetection: ChangeDetectionStrategy.OnPush
 
 })
 export class MapBuildingsComponent implements OnInit, OnDestroy {
@@ -141,7 +140,7 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
   tooltip: any;
 
   constructor(
-		private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef,
     private _mapService: MapService,
     private menuService: MenuService,
     private metaService: MetaService,
@@ -154,20 +153,19 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
     private viewService: ViewService,
     private renderer2: Renderer2,
     private shareButtonService: ShareButtonService) {
-			// Detach this view from the change-detection tree
-			this.cdr.detach();
-		}
+    // Detach this view from the change-detection tree
+    this.cdr.detach();
+  }
 
   toggleSidebar() {
     this.sidebarState = this.sidebarState === 's-close' ? 's-open' : 's-close';
 
-		// detect changes when closing sidebar group
-		this.cdr.detectChanges();
+    // detect changes when closing sidebar group
+    this.cdr.detectChanges();
   }
 
   openSidebar() {
     this.sidebarState = 's-open';
-    console.log('open sidebar', this.sidebarState)
   }
 
   select(e) {
@@ -187,7 +185,6 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
 
   initView(view) {
     const mainContainerDom = this.viewService.getMapElementRef();
-		console.log('mainContainerDom', mainContainerDom);
 
     // add tooltip on mouse move
     // TODO remove event on destroy
@@ -197,9 +194,7 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
     this.tooltipEvent = tooltipEvent;
     this.tooltip = tooltip;
 
-		this.cdr.detectChanges();
-
-    console.log('tooltipEvent', this.tooltipEvent, tooltip);
+    this.cdr.detectChanges();
 
     this.clickEvent = view.on("click", (event) => {
       // remove existing graphic
@@ -208,7 +203,6 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
       // else identify with hitTest method
       // find layer and remove it, max 4 layers: polygon, polyline, point, and additional point if scale is set from point to point in mxd
       this._mapService.removeSelectionLayers();
-			console.log('%c Map CLICK', 'font-size: 22px; color: violet')
 
       // hitTest check graphics in the view
       this.hitTestFeaturePopup(view, event);
@@ -226,7 +220,6 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
     view.hitTest(screenPoint)
       .then(features => {
         const values = features.results[0];
-				console.log('click', this.map.findLayerById('feature-silumosSuvartojimas'), features, this.heatContent)
         const showResult = values.graphic;
         this.openSidebar();
         this.heatContent = showResult.attributes;
@@ -237,11 +230,9 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
         const selectionGraphic = this._mapService.initFeatureSelectionGraphic('polygon', geometry, layer, attributes);
         groupFeatureSelectionLayer.graphics.add(selectionGraphic);
         this.map.add(groupFeatureSelectionLayer);
-				console.log('%c Map CLICK 2', 'font-size: 22px; color: purple')
 
-				// check this view and its children
-				//this.cdr.reattach();
-				this.cdr.detectChanges();
+        // check this view and its children
+        this.cdr.detectChanges();
       });
   }
 
@@ -271,7 +262,6 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
 
     // return view
     this.view = this._mapService.getView();
-		console.log('%c VIEW getView', 'color: green;font-size: 23px', this.view)
 
     //create theme main layers grouped
     // FIXME seem to bee obsolete
@@ -307,10 +297,9 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
     });
   }
 
-	ngDoCheck() {
-		console.log('Do Check');
-		//this.cdr.detectChanges();
-	}
+  ngDoCheck() {
+    //console.log('Do Check');
+  }
 
   ngOnDestroy() {
     const subLayersSate = this.menuService.getSubLayersState();
@@ -338,10 +327,10 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
     this.search.clear();
     this.search.destroy();
 
-		// cursor style auto
-		this.renderer2.setProperty(document.body.style, 'cursor', 'auto');
+    // cursor style auto
+    this.renderer2.setProperty(document.body.style, 'cursor', 'auto');
 
-		this.renderer2.removeClass(document.body, 'buldings-theme');
+    this.renderer2.removeClass(document.body, 'buldings-theme');
   }
 
 }

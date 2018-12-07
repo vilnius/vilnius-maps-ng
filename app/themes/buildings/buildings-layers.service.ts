@@ -18,12 +18,9 @@ export class BuildingsLayersService {
     const themeLayers = pick(MapOptions.themes, themeName)[themeName]["layers"];
     const map = this.mapService.returnMap();
 
-		console.log('BUILDINGS VIEW', this.mapService.getView())
-
     //all theme layers will be added to common group layer
     const mainGroupLayer = this.mapService.initGroupLayer(themeName + 'group', 'Pastatai', 'show');
     map.add(mainGroupLayer);
-		console.log("GROUP", mainGroupLayer);
 
     forIn(themeLayers, (layer, key) => {
       const response = this.mapService.fetchRequest(layer.dynimacLayerUrls)

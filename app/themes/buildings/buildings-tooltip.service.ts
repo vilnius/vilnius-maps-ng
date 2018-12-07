@@ -45,7 +45,6 @@ export class BuildingsTooltipService {
 				return;
 			}
 			function draw(now) {
-				console.log("frame timstamp", now);
 				const top = (event.y + 100) < window.innerHeight ? window.innerHeight - event.y + 10 + 'px' : window.innerHeight - event.y - 30 + 'px';
 				const left = (event.x + 100) < window.innerWidth ? event.x + 20 + 'px' : (event.x - 110) + 'px';
 				const values = response.results["0"];

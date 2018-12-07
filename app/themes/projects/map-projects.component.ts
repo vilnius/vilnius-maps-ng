@@ -142,13 +142,10 @@ export class MapProjectsComponent implements OnInit, OnDestroy {
       let sqlStr = this.getSqlString();
       // Get the new extent of the view only when view is stationary.
       if (view.extent) {
-        //console.log(view.extent);
         this.getProjects(itvFeatureUrl, view.extent, sqlStr, count);
         count += 1;
       }
     });
-
-		console.log('watchU',  this.watchU);
 
     this.identifyEvent = view.on("click", (event) => {
       //remove selection graphics layer if exist
