@@ -290,6 +290,7 @@ export class MapService {
         });
         break;
     }
+		
     return symbol;
   }
 

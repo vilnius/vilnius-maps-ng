@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, ElementRef, ViewChild, ChangeDetectorRef, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 
 import { Chart } from 'chart.js';
@@ -220,8 +220,8 @@ export class SidebarComponent implements OnChanges {
 
   selectionByTypeState = false;
 
-	// chart labels for tooltip
-	chartLabels = [];
+  // chart labels for tooltip
+  chartLabels = [];
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -390,13 +390,11 @@ export class SidebarComponent implements OnChanges {
         att.BALAN_KW ? parseFloat(att.BALAN_KW.toFixed(2)) : att.BALAN_KW
       ];
     });
-    console.log('dataset', dataset);
     return dataset;
   }
 
   initClassesData() {
     const labels = this.heatingClassesData.classes.map(label => label + ' klasė');
-    console.log('%c labels', "font-size:18px; color: orange", this.heatingClassesData)
     const data = {
       labels,
       datasets: [{
@@ -421,7 +419,6 @@ export class SidebarComponent implements OnChanges {
     const el = this.heatClassesChart.nativeElement.getContext('2d');
     this.classesChart && this.classesChart.clear();
     const data = this.initClassesData();
-    console.log('%c data', "font-size:18px; color: orange", data)
     if (!this.classesChart) {
       this.classesChart = new Chart(el, {
         type: 'bar',
@@ -439,7 +436,7 @@ export class SidebarComponent implements OnChanges {
               beforeTitle: (tooltipItems) => {
                 return this.chartLabels[tooltipItems[0].index].split(',')[0];
               },
-							// add empty string
+              // add empty string
               title: () => {
                 return '';
               }
@@ -479,20 +476,20 @@ export class SidebarComponent implements OnChanges {
       });
       this.classesChart.data.labels = data.labels;
       this.classesChart.data.datasets = data.datasets;
-			this.classesChart.update();
+      this.classesChart.update();
     } else {
+      this.classesChart.data.labels = data.labels;
+      this.classesChart.data.datasets = data.datasets;
       this.classesChart.update();
     }
 
   }
 
   ngDoCheck() {
-    console.log('Do Check SIDEBAR', this.sidebarHeatContent);
     this.cdr.detectChanges();
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    console.log('OnChanges', changes);
+  ngOnChanges() {
     this.closeSidaberGroup();
 
     // close main heat content while adding animation
@@ -503,7 +500,6 @@ export class SidebarComponent implements OnChanges {
       //add setTimeout  for main heat content animation
       setTimeout(() => {
         this.innerState = 's-open';
-        console.log("sidebar C 2", this.innerState, this.mainSidebarState);
         this.cdr.detectChanges();
       }, 200);
       this.lastHeatingYear = this.sidebarHeatContent.SEZONAS;

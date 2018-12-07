@@ -1,5 +1,5 @@
 <div class="kindergartens-sidebar col-xs-6 col-md-4 r-sidebar sidebar-right">
-  <p class="build-p">{{title}}</p>
+  <p class="build-p">Ikimokyklinės ugdymo įstaigos</p>
   <ng-content ></ng-content>
   <div #contentWrapper id="build-inner" class="inner sub-build">
     <ng-container [ngTemplateOutlet]="sidebarContent && kindergartensContent"></ng-container>
@@ -61,7 +61,7 @@
         <span class="badge red" *ngIf="filtersOn" (click)="resetFilters()">valyti filtrus</span>
       </p>
     </div>
-    <form ngNativeValidate *ngIf="dataStore" (ngSubmit)="onSubmitAnalyze(form)" #form="ngForm"  class="kGartens-form" (change)="isFiltered()">
+    <form ngNativeValidate (ngSubmit)="onSubmitAnalyze(form)" #form="ngForm"  class="kGartens-form" (change)="isFiltered()">
       <div class="input-group">
         <mat-checkbox
           #bufferCheckbox

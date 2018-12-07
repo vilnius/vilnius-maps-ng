@@ -1,10 +1,6 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 
 import { MapService } from '../../../map.service';
-import { MapOptions } from '../../../options';
-
-import Legend = require('esri/widgets/Legend');
-import on = require("dojo/on");
 
 import { Subscription } from 'rxjs';
 
@@ -33,7 +29,6 @@ import { Subscription } from 'rxjs';
     `
 })
 export class MenuLegendItvComponent implements OnInit, OnDestroy {
-  @Input() viewLegend: any;
   itvLayers: any;
 
   subscription: Subscription;
@@ -48,8 +43,6 @@ export class MenuLegendItvComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    let view = this._mapService.getView();
-    let map = this._mapService.returnMap();
     this.subscription = this._mapService.layersStatus.subscribe(status => {
       this.status = status;
     });

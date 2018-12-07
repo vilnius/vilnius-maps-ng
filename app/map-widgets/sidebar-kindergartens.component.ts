@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, DoCheck, OnChanges, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 
 import { MapOptions } from '../options';
@@ -43,9 +43,8 @@ import FeatureSet = require('esri/tasks/support/FeatureSet');
   ],
 })
 
-export class SidebarKindergartensComponent implements OnInit, OnChanges {
+export class SidebarKindergartensComponent implements OnInit, OnChanges, DoCheck {
   @ViewChild('searchWidgetDOM') searchWidgetDOM: ElementRef;
-  @Input() title;
   @Input() mainSidebarState;
   @Input() sidebarContent;
   @Input() dataStore: DataStore;
@@ -100,16 +99,11 @@ export class SidebarKindergartensComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit() {
-    !this.title && (this.title = 'Informacija');
     this.geometryService = this.menuToolsService.addGeometryService(MapOptions.mapOptions.staticServices.geometryUrl);
 
     this.simpleQuery(MapOptions.themes.kindergartens.layers.darzeliai.dynimacLayerUrls + '/3').then(features => {
       this.fullArea = features[0];
     })
-  }
-
-  ngDoCheck() {
-    this.cdr.detectChanges();
   }
 
   //check if any filter is has been set
@@ -361,6 +355,10 @@ export class SidebarKindergartensComponent implements OnInit, OnChanges {
     this.cdr.detectChanges();
   }
 
+	ngDoCheck() {
+		this.cdr.detectChanges();
+	}
+
   ngOnChanges() {
     if (this.dataStore) {
       this.filteredGartens = this.dataStore.mainInfo;
@@ -371,7 +369,7 @@ export class SidebarKindergartensComponent implements OnInit, OnChanges {
       this.dataType = this.selectorsService.getUniqueAttribute(this.dataStore.mainInfo, 'SCHOOL_TYPE');
       //console.log("UNIQUE dataType: ", this.dataType)
       this.dataName = this.selectorsService.getUniqueAttribute(this.dataStore.mainInfo, 'LABEL');
-    }
+		}
 
     if (this.dataStore && this.sidebarContent) {
       this.groups = this.dataStore.info.filter(data => data.DARZ_ID === this.sidebarContent.GARDEN_ID);

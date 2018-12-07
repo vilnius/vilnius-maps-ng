@@ -7,7 +7,7 @@
 <menu-themes id="theme" class="sub-menu module animate color-layers mobile-active" [class.mobile-active]="mobileActive"></menu-themes>
 <menu-layers-itv *ngIf="themeName==='projektai'" id="layers" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-layers-itv>
 <menu-layers *ngIf="themeName!=='projektai'" id="layers" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-layers>
-<menu-legend-itv *ngIf="themeName==='projektai'" [viewLegend]="view" id="legend" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-legend-itv>
+<menu-legend-itv *ngIf="themeName==='projektai'" id="legend" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-legend-itv>
 <menu-legend *ngIf="themeName!=='projektai'" id="legend" class="sub-menu module animate color-layers default-legend" [class.mobile-active]="mobileActive"></menu-legend>
 <menu-tools (close)=onClose($event) id="tools" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-tools>
 <div id="open-data" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive">
