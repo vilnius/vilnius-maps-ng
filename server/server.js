@@ -2,7 +2,7 @@ const express = require('express');
 const url = require('url');
 const op = require('./dist/options.js');
 const themes = op.MapOptions.themes;
-const oembedUrl = 'https://gis.vplanas.lt/oembed/?url=https://maps1.vilnius.lt';
+const oembedUrl = 'https://gis.vplanas.lt/oembed/?url=https://maps.vilnius.lt';
 const oembedTitle = 'Vilniaus miesto interaktyvūs žemėlapiai';
 const oembedDescription = 'Vilniaus miesto savivaldybės interaktyvūs žemėlapiai';
 const oembedImg = './app/img/vilnius_logo_o.png';
@@ -40,8 +40,11 @@ app.get('/*', (req, res) => {
     });
   }
 
-  // redirect on error to home page
-  res.redirect('/');
+	// still using legacy maps application with static url routing
+	if (pathname.slice(1) !== 'maps_vilnius') {
+		// redirect on error to home page
+		res.redirect('/');
+	}
 
 });
 
