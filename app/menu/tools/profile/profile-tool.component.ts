@@ -6,6 +6,8 @@ import { ToolsList } from '../../tools.list';
 
 import { Subscription } from 'rxjs';
 
+import { tap, filter, takeUntil } from 'rxjs/operators';
+
 @Component({
   selector: 'profile-tool',
   templateUrl: './app/menu/tools/profile/profile-tool.component.html',
@@ -34,26 +36,31 @@ export class ProfileToolComponent implements OnInit {
   ) { }
 
   toggleMeasure() {
-    this.toolActive = this.profileToolService.toggleMeasure();
+    this.toolActive = this.profileToolService.toggleProfile();
 
     if (this.toolActive) {
       // set tool name Obs
       this.toolsNameService.setCurentToolName(ToolsList.profile);
 
       // destroy tool component if other component containing draw tool got opened
-      this.s = this.toolsNameService.currentToolName
-        .subscribe((name) => {
-          if (ToolsList.profile !== name) {
-            // TODO refactor, currently using setTimeout for ExpressionChangedAfterItHasBeenCheckedError
+      this.s = this.toolsNameService.currentToolName.pipe(
+        takeUntil(this.toolsNameService.currentToolName.pipe(
+          filter(name => ToolsList.profile !== name),
+          tap(() => {
             setTimeout(() => {
-              this.toolActive = this.profileToolService.closeMeasure();
-              this.s.unsubscribe()
+              this.toolActive = this.profileToolService.closeProfile();
+              this.toolActive = false;
             });
-          }
-        });
+          })
+        ))
+      ).subscribe(() => '');
     } else {
-      this.s.unsubscribe()
+      if (this.s) {
+        this.s.unsubscribe();
+      }
+
     }
+
   }
 
   ngOnInit() {

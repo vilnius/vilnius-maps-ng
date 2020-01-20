@@ -3,12 +3,20 @@ import { Injectable, ElementRef, Renderer2 } from '@angular/core';
 
 @Injectable()
 export class KindergartensTooltipService {
+	parentNode: ElementRef;
+	//dojo events
+	tooltipEvent: any;
+
+	// tooltip dom
+	tooltip: any;
 
   constructor() { }
 
-  addTooltip(view, mapView, element: ElementRef, rend: Renderer2, dataStore) {
-    const tooltip = rend.createElement('div');
-    const tooltipEvent = mapView.on("pointer-move", (event) => {
+  addTooltip(view, mapView, element: ElementRef, rend: Renderer2, dataStore): void {
+		const tooltip = rend.createElement('div');
+		this.tooltip = tooltip;
+		this.parentNode = element;
+    this.tooltipEvent = mapView.on("pointer-move", (event) => {
       const screenPoint = {
         // hitTest BUG, as browser fails to execute 'elementFromPoint' on 'Document'
         // FIXME bug with x coordinate value, when menu icon is in view, temp solution: change x value from 0 to any value
@@ -48,8 +56,13 @@ export class KindergartensTooltipService {
 
         });
     });
-
-    return [tooltipEvent, tooltip];
   }
+
+	clearMemoryAndNodes(rend) {
+		if (this.tooltipEvent) {
+			this.tooltipEvent.remove();
+		}
+		rend.removeChild(this.parentNode, this.tooltip);
+	}
 
 }

@@ -28,6 +28,9 @@ import { ProfileToolService } from './profile-tool.service';
 			-moz-box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 			z-index: 999;
 	   }
+		 :host-context(.map-projects) .profile-tool {
+		 	width: calc(100vw - 365px);
+		 }
 	   @media only screen and (max-width: 1382px) {
 	     .profile-tool {
 				 margin: 10px;
@@ -45,7 +48,7 @@ export class ProfileToolContainerComponent {
 	constructor(private profileToolService: ProfileToolService) { }
 
 	closeMeasure() {
-		this.profileToolService.closeMeasure();
+		this.profileToolService.closeProfile();
 	}
 
 }

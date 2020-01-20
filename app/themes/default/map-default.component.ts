@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from "@angular/router";
 
 import { MapService } from '../../map.service';
@@ -12,6 +12,7 @@ import { ShareButtonService } from '../../services/share-button.service';
 import { IdentifyService } from '../../services/identify/identify.service';
 
 import { Subscription } from 'rxjs';
+import { MapStreamService } from '../../services/streams/map-stream.service';
 
 @Component({
   selector: 'esri-map-default',
@@ -45,6 +46,7 @@ export class MapDefaultComponent implements OnInit, OnDestroy {
 	mobileActive = true;
 
   constructor(
+    private cdr: ChangeDetectorRef,
     private _mapService: MapService,
 		private menuService: MenuService,
     private metaService: MetaService,
@@ -53,6 +55,7 @@ export class MapDefaultComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private basemapsService: BasemapsService,
     private viewService: ViewService,
+    private mapStreamService: MapStreamService,
     private shareButtonService: ShareButtonService) { }
 
   select(e) {
@@ -63,7 +66,7 @@ export class MapDefaultComponent implements OnInit, OnDestroy {
   shareToggle(e) {
     this.shareContainerActive = !this.shareContainerActive;
     this.shareUrl = this.shareButtonService.shareToggle(e, this.shareContainerActive);
-  }
+  } 
 
   setActiveBasemap(view, basemap: string) {
     //toggle basemap
@@ -80,7 +83,6 @@ export class MapDefaultComponent implements OnInit, OnDestroy {
       }
     );
     this.queryUrlSubscription.unsubscribe();
-    //console.log("init");
     // add snapshot url and pass path name ta Incetable map service
     // FIXME ActivatedRoute issues
     // const snapshotUrl = this.router.url.slice(1);
@@ -102,18 +104,22 @@ export class MapDefaultComponent implements OnInit, OnDestroy {
       this.viewService.createThemeLayers(snapshotUrl, this.queryParams);
     };
     this.view.then((view) => {
-      //console.log('%c VIEW', 'color: red; font-size: 20px', view);
+      // console.log('%c VIEW', 'color: red; font-size: 20px', view);
+
       this.viewService.createSubLayers(this.queryParams, this.map);
 
       //if query paremeteters are defined get zoom and center
-      this._mapService.centerZoom(view, this.queryParams);
+      this._mapService.centerZoom(view, this.queryParams, snapshotUrl);
 
       //add default search widget
       this.search = this.searchService.defaultSearchWidget(view);
       view.ui.add(this.search, {
-        position: "top-left",
+        position: 'top-left',
         index: 2
       });
+
+            // run change detection
+            this.cdr.detectChanges();
 
       //init identification of default or sub layers on MapView
       this.identifyEvent = this.identify.identifyLayers(view);
@@ -143,7 +149,10 @@ export class MapDefaultComponent implements OnInit, OnDestroy {
 
 		// clear and destroy search widget and sear data
 		this.search.clear();
-		this.search.destroy();
+    this.search.destroy();
+    
+    // destroy streams (only if exists)
+    this.mapStreamService.destroy();
 
   }
 }

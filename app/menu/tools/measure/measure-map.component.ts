@@ -66,7 +66,9 @@ export class MeasureMapComponent implements OnInit, AfterViewInit, OnChanges {
 
   closeMeasure() {
     this.measureActive = false;
-    this.s.unsubscribe();
+		if (this.s) {
+			this.s.unsubscribe();
+		}
 
     //  detach changes detection
     // and last time detect changes when closing tool

@@ -3,7 +3,7 @@
 	3D traukimas
 </button>
 
-<div id="extract-container" class="measure-tool buffer-tool">
+<div *ngIf="toolActive" id="extract-container" class="measure-tool buffer-tool">
 	<div id="measure-menu" class="measure" [class.measure-active]="toolActive" draggable="true">
 		<span id="close-measure" (click)="closeMeasure()" [class.measure-active]="toolActive">
 			<svg width="15" height="15" xmlns="http://www.w3.org/2000/svg" xmlns:xlink= "http://www.w3.org/1999/xlink">
@@ -18,7 +18,7 @@
 		<span title="Keiskite padėti pelės pagalba">- keiskite padėti</span>
 		</span>
 
-		<extract-container *ngIf="toolActive"></extract-container>
+		<extract-container></extract-container>
 
 	</div>
 </div>

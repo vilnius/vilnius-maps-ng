@@ -46,8 +46,6 @@ export class BasemapsService {
 
     });
     map.basemap = this.mapService.customBasemaps(basemaps);
-    // update map instance
-    this.mapService.updateMap(map);
     return basemaps;
   }
 

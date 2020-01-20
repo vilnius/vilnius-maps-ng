@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, NgZone } from '@angular/core';
 
 import { MapService } from '../../../map.service';
 import { ProfileToolService } from './profile-tool.service';
@@ -89,12 +89,10 @@ export class ProfileContainerComponent implements OnInit, OnDestroy {
   updatingChart = false;
 
   constructor(
-    private cdr: ChangeDetectorRef,
+    private zone: NgZone,
     private mapService: MapService,
     private profileToolService: ProfileToolService
-  ) {
-    //this.cdr.detach()
-  }
+  ) { }
 
   ngOnInit() {
     this.view = this.mapService.getView();
@@ -139,32 +137,38 @@ export class ProfileContainerComponent implements OnInit, OnDestroy {
     // focus the view to activate keyboard shortcuts for drawing polygons
     this.view.focus();
 
-    // listen to vertex-add event on the action
-    this.eventHandlers.push(action.on("vertex-add", (e) => this.profileToolService.createPolylineGraphic(e)));
+    this.zone.runOutsideAngular(() => {
 
-    // listen to cursor-update event on the action
-    this.eventHandlers.push(action.on("cursor-update", (e) => this.profileToolService.createPolylineGraphic(e)));
 
-    // listen to vertex-remove event on the action
-    this.eventHandlers.push(action.on("vertex-remove", (e) => this.profileToolService.createPolylineGraphic(e)));
+      // listen to vertex-add event on the action
+      this.eventHandlers.push(action.on("vertex-add", (e) => this.profileToolService.createPolylineGraphic(e)));
 
-    // listen to draw-complete event on the action
-    this.eventHandlers.push(action.on("draw-complete", (e) => {
-      this.updatingChart = true;
-      this.profileToolService.createPolylineGraphic(e, true).then((result) => {
-        this.updatingChart = false;
-        if (result.details && (result.details.httpStatus === 400)) {
-          this.hasError = true;
-          this.chartData = null;
-        } else {
-          this.hasError ? this.hasError = false : this.hasError;
-          this.chartData = result;
-        }
-        // detect changes for view and child components
-        this.cdr.detectChanges();
-      });
-      this.toggleDraw();
-    }));
+      // listen to cursor-update event on the action
+      this.eventHandlers.push(action.on("cursor-update", (e) => this.profileToolService.createPolylineGraphic(e)));
+
+      // listen to vertex-remove event on the action
+      this.eventHandlers.push(action.on("vertex-remove", (e) => this.profileToolService.createPolylineGraphic(e)));
+
+      // listen to draw-complete event on the action
+      this.eventHandlers.push(action.on("draw-complete", (e) => {
+        this.zone.run(() => { this.updatingChart = true; })
+        this.profileToolService.createPolylineGraphic(e, true).then((result) => {
+          this.zone.run(() => {
+            this.updatingChart = false;
+            if (result.details && (result.details.httpStatus === 400)) {
+              this.hasError = true;
+              this.chartData = null;
+            } else {
+              this.hasError ? this.hasError = false : this.hasError;
+              this.chartData = result;
+            }
+          })
+        });
+        this.toggleDraw();
+				this.removeEventHandlers();
+      }));
+
+    });
   }
 
   //remove eventHandlers

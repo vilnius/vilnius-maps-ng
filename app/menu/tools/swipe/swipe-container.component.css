@@ -1,0 +1,48 @@
+.swipe-vertical-line {
+  background-color: #e61c24;
+  width: 5px;
+  height: 100vh;
+  padding: 0 !important;
+  margin: 0;
+  z-index: 30;
+  cursor: col-resize;
+  left: 50%;
+  position: absolute;
+}
+
+.swipe-icon {
+  position: absolute;
+	width: 20px;
+  left: 50%;
+  top: 50%;
+	transform: translate(-50%, -50%);
+  background: #e61c24;
+  padding: 6px 0;
+  border-radius: 2px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 30px;
+	color: #fff;
+}
+
+.swipe-msg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+	width: 0;
+	background: rgba(25, 28, 26, 0.67);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 18px;
+	color: #fff;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+img {
+  position: absolute;
+}

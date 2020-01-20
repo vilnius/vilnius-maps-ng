@@ -69,14 +69,14 @@
 	Pagrindinis filtravimas:
 	<form ngForm action="">
 		<div class="radio">
-			<label>
-        <input type="radio" name="wordFilter" id="optionsRadios2" [(ngModel)]="mainFilterCheck"  value="word" (change)="change($event)">
-        <h6>Pagal raktinį žodį:</h6>
-      </label>
-			<label>
-          <input type="radio" name="mapFilter" id="optionsRadios1" [(ngModel)]="mainFilterCheck" value="map" (change)="change($event)">
-          <h6>Pagal žemėlapio aprėptį</h6>
-      </label>
+			<mat-radio-group
+			[(ngModel)]="mainFilterCheck"
+			(change)="change($event)"
+			[ngModelOptions]="{standalone: true}"
+			>
+				<mat-radio-button value="word">Pagal raktinį žodį</mat-radio-button>
+				<mat-radio-button value="map">Pagal žemėlapio aprėptį</mat-radio-button>
+			</mat-radio-group>
 		</div>
 	</form>
 </div>

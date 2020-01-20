@@ -23,21 +23,24 @@ import { environment } from '../environments/environment';
 import * as Raven from 'raven-js';
 
 if (environment.production) {
+  console.log('environment prod', environment.production);
+}
+
+// set prodcution builds on build time usin env
+if (process.env.NODE_ENV === 'production') {
   Raven
-    .config(`https://${MapOptions.sentry.dns}@sentry9.vilnius.lt/4`, {
-      captureUnhandledRejections: true
-    })
+    .config(process.env.SENTRY_DSN)
     .install();
 }
 
 export class RavenErrorHandler implements ErrorHandler {
   handleError(err: any): void {
-    Raven.captureException(err.originalError);
+    Raven.captureException(err);
   }
 }
 
 export function VilniusMapsErrorHandler() {
-  if (environment.production) {
+  if (process.env.NODE_ENV === 'production') {
     return new RavenErrorHandler();
   } else {
     return new ErrorHandler();
@@ -50,7 +53,7 @@ export function VilniusMapsErrorHandler() {
     BrowserModule,
     HttpClientModule,
     Routing,
-    ShareModule,
+    ShareModule.forRoot(),
     MenuModule,
     BrowserAnimationsModule
   ],

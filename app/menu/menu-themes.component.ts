@@ -23,13 +23,13 @@ import values from 'lodash-es/values';
 					</div>
 					<div *ngFor="let theme of themes; let i=index ; let odd=odd">
 						<div *ngIf="theme.production && !theme.hide  && !theme.external && !theme.custom" class="sub-theme" [class.align-left]="odd" [class.align-right]="!odd" routerLinkActive="current-theme">
-							<a *ngIf="!theme.url && !theme.custom" routerLink="/{{theme.id}}" fragment="theme">
+							<a *ngIf="!theme.url && !theme.custom" routerLink="/{{theme.id}}" fragment="layers">
 								<img [src]="theme.imgUrl" [alt]="theme.imgAlt"/>
 							</a>
-							<a *ngIf="theme.url" [href]="theme.url" fragment="theme">
+							<a *ngIf="theme.url" [href]="theme.url" fragment="layers">
 								<img [src]="theme.imgUrl" [alt]="theme.imgAlt"/>
 							</a>
-							<a *ngIf="!theme.url && theme.custom" [href]="theme.id" fragment="theme">
+							<a *ngIf="!theme.url && theme.custom" [href]="theme.id" fragment="layers">
 								<img [src]="theme.imgUrl" [alt]="theme.imgAlt"/>
 							</a>
 							<p>{{theme.name}}</p>
@@ -39,13 +39,13 @@ import values from 'lodash-es/values';
 					<h2>Papildomo funkcionalumo temos</h2>
 					<div *ngFor="let theme of themes; let i=index; let odd=odd">
 						<div *ngIf="theme.production && !theme.hide && !theme.external && theme.custom" class="sub-theme" [class.align-left]="!odd" [class.align-right]="odd" routerLinkActive="current-theme">
-							<a *ngIf="!theme.url && !theme.custom" routerLink="/{{theme.id}}" fragment="theme">
+							<a *ngIf="!theme.url && !theme.custom" routerLink="/{{theme.id}}" fragment="layers">
 								<img [src]="theme.imgUrl" [alt]="theme.imgAlt"/>
 							</a>
-							<a *ngIf="theme.url" [href]="theme.url" fragment="theme">
+							<a *ngIf="theme.url" [href]="theme.url" fragment="layers">
 								<img [src]="theme.imgUrl" [alt]="theme.imgAlt"/>
 							</a>
-							<a *ngIf="!theme.url && theme.custom" routerLink="/{{theme.id}}" fragment="theme">
+							<a *ngIf="!theme.url && theme.custom" routerLink="/{{theme.id}}" fragment="layers">
 								<img [src]="theme.imgUrl" [alt]="theme.imgAlt"/>
 							</a>
 							<p>{{theme.name}}</p>
@@ -55,7 +55,7 @@ import values from 'lodash-es/values';
 					<h2>Kiti žemėlapiai</h2>
 					<div *ngFor="let theme of themes; let i=index; let odd=odd">
 						<div *ngIf="theme.production && !theme.hide && theme.external" class="sub-theme" [class.align-left]="!odd" [class.align-right]="odd" routerLinkActive="current-theme">
-							<a *ngIf="theme.url" rel="noopener noreferrer" target="_blank" [href]="theme.url" fragment="theme">
+							<a *ngIf="theme.url" rel="noopener noreferrer" target="_blank" [href]="theme.url" fragment="layers">
 								<img [src]="theme.imgUrl" [alt]="theme.imgAlt"/>
 							</a>
 							<p>{{theme.name}}</p>

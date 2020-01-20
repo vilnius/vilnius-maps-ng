@@ -1,8 +1,10 @@
-import { Component, ChangeDetectorRef, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, ChangeDetectorRef, NgZone, OnInit,  OnDestroy, ViewChild, ElementRef } from '@angular/core';
 
 import { MapService } from '../../../map.service';
 import { MeasureMapService } from './measure-map.service';
 import { AnalyzeParams } from './AnalyzeParams';
+import { ThemeNameService } from '../../../services/theme-name.service';
+
 import PolygonDrawAction = require('esri/views/2d/draw/PolygonDrawAction');
 
 import isEmpty from 'lodash-es/isempty';
@@ -67,8 +69,10 @@ export class MeasureContainerComponent implements OnInit, OnDestroy {
 
   constructor(
     private cdr: ChangeDetectorRef,
+    private zone: NgZone,
     private mapService: MapService,
-    private measureMapService: MeasureMapService
+    private measureMapService: MeasureMapService,
+    private themeNameService: ThemeNameService
   ) { }
 
   ngOnInit() {
@@ -153,7 +157,6 @@ export class MeasureContainerComponent implements OnInit, OnDestroy {
 
     // reset eventHandler events
     this.removeEventHandlers();
-
   }
 
   // activate measure tools based on id
@@ -180,7 +183,7 @@ export class MeasureContainerComponent implements OnInit, OnDestroy {
     }));
 
     //set active tool to empty string
-    this.activeTool = "";
+    this.zone.run(() => {this.activeTool = ""});
 
     // unsuspend layers
     if (this.mapService.getSuspendedIdentitication()) {

@@ -1,0 +1,98 @@
+<div class="extract-content">
+	<h5>
+		{{ extractService.toolTitle }}
+	</h5>
+
+	<div class="extract-results">
+		<div class="feature-count animate">
+
+			<mat-vertical-stepper [linear]="true" #stepper>
+				<ng-template matStepperIcon="edit">
+					<mat-icon>check</mat-icon>
+				</ng-template>
+				<mat-step completed="false" [class.active-step]="stepper.selectedIndex===0" #stepFirst >
+
+						<ng-template matStepLabel >Apibrėžti teritoriją</ng-template>
+
+						<div>
+							<div id="draw-polygon" #polygonRef class="esri-widget-button esri-widget esri-interactive" title="Brėžti poligoną"  [ngClass]="{'active': drawActive}">
+								<button
+									mat-button matStepperNext (click)="selectDrawEl()" class="esri-icon-polygon">
+									<p>Apibrėžti</p>
+								</button>
+							</div>
+							<div *ngIf="this.extractService.graphic" id="draw-polygon" class="esri-widget-button esri-widget esri-interactive">
+								<button @leaveEnterTransition
+									mat-button (click)="resetTools()" class="esri-icon-clear esri-icon-erase">
+									<p>Valyti</p>
+								</button>
+							</div>
+						</div>
+
+						<div hideElement *ngIf="this.extractService.calculatedUnits > extractService.limits" @leaveEnterTransition class="alert alert-danger alert-margin-top" role="alert">
+							<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+							Teritorijos plotas negali viršyti {{ extractService.limits | number:'1.0-0' }} ha
+						</div>
+
+				</mat-step>
+
+				<mat-step completed="false" #stepSecond [class.active-step]="stepper.selectedIndex===1">
+
+						<ng-template matStepLabel>Formuoti užsakymą</ng-template>
+
+						<div *ngIf="extracDisabled" >
+
+							<div class="alert alert-success" role="alert">
+								Sėkmingai įvedėte teritoriją, galite formuoti užsakymą.
+							</div>
+
+							<!-- <button mat-button matStepperPrevious>Atgal</button> -->
+							<button mat-button matStepperNext (click)="initExtract()"
+							class="step-extract" [class.active]="!extracDisabled">Formuoti</button>
+
+							<button mat-button (click)="resetTools()" class="button-margin-top button-clear">Atgal</button>
+						</div>
+
+						<div *ngIf="!extracDisabled" class="alert alert-success button-margin-top" role="alert">
+							Duomenys yra ruošiami, įprastai tai gali trukti iki {{ this.extractService.time }} minučių.
+						</div>
+						<mat-progress-bar *ngIf="!extracDisabled" class="vp-mat-bar" mode="determinate" [value]="progressBarValue"></mat-progress-bar>
+						<!-- <mat-spinner *ngIf="!extracDisabled" diameter="50"></mat-spinner> -->
+
+				</mat-step>
+
+				<mat-step [class.active-step]="stepper.selectedIndex===2">
+					<ng-template matStepLabel>Rezultatai</ng-template>
+					<div>
+						<div *ngIf="extractService.fileResultsurls.succes; else errorMsg">
+							<div class="alert alert-success" role="alert">
+								Ištraukos sėkmingai suformuotos
+							</div>
+							<div>{{ extractService.resultsMessage }}</div>
+							<a [href]="extractService.fileResultsurls.zip1" target="_blank" rel="noopener noreferrer">{{ extractService.zip1OutputTitle }} zip</a>
+							<a [href]="extractService.fileResultsurls.zip2" target="_blank" rel="noopener noreferrer">{{ extractService.zip2OutputTitle }} zip</a>
+							<!-- <button mat-button matStepperPrevious>Back</button> -->
+
+						</div>
+						<button mat-button (click)="resetTools()">Užsakyti iš naujo</button>
+						<ng-template #errorMsg>
+							<mat-spinner class="mat-error" *ngIf="!gpError && extractService.fileResultsurls.succes === null" diameter="50"></mat-spinner>
+							<div *ngIf="extractService.fileResultsurls.succes !== null || gpError" class="alert alert-danger" role="alert">
+								Nepavyko suformuoti užklausos.
+								<br>
+								Galimos priežastys:
+								<ol>
+									<li>Per didelis užklausų kiekis</li>
+									<li>Kitos priežastys	</li>
+								</ol>
+							</div>
+						</ng-template>
+					</div>
+				</mat-step>
+			</mat-vertical-stepper>
+		</div>
+	</div>
+
+</div>

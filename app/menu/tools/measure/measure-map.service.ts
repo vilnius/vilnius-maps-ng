@@ -87,7 +87,7 @@ export class MeasureMapService {
     this.view.graphics.add(graphic);
 
     // calculate the area of the polygon
-    let area = geometryEngine.planarArea(polygon, "square-kilometers");
+    let area = geometryEngine.planarArea(polygon, "square-meters");
     if (area < 0) {
       area = - area;
     }
@@ -96,10 +96,9 @@ export class MeasureMapService {
     this.labelAreas(polygon, area, ended);
   }
 
-  // U
-  //Label polyon with its area
+  // Label polyon with its area
   labelAreas(geom, area, ended) {
-    this.calculatedUnits = area.toFixed(4) + " km²"
+    this.calculatedUnits = area.toFixed(0) + " m²"
     const graphic = this.menuToolsService.createAreaLabelGraphic(geom, area, ended);
     this.view.graphics.add(graphic);
   }
@@ -120,7 +119,7 @@ export class MeasureMapService {
     this.view.graphics.add(graphic);
 
     // calculate the area of the polygon
-    let line = geometryEngine.planarLength(graphic.geometry, "kilometers");
+    let line = geometryEngine.planarLength(graphic.geometry, "meters");
     const lastIndex = polyline.paths.length - 1;
     this.labelLinesAndPoints("line", polyline.paths[lastIndex], line, ended);
   }
@@ -130,8 +129,8 @@ export class MeasureMapService {
     //this.calculatedUnits
     const endString = ended ? "" : " (užbaigti dvigubu paspaudimu)";
     let text: string;
-    geometryType === "line" ? text = geometry.toFixed(3) + " km" + endString : text = `x: ${points[1].toFixed(2)}, y: ${points[0].toFixed(2)}`;
-    geometryType === "line" ? this.calculatedUnits = geometry.toFixed(3) + " km" : this.calculatedUnits = `x: ${points[1].toFixed(2)}, <br>y: ${points[0].toFixed(2)}`
+    geometryType === "line" ? text = geometry.toFixed(0) + " m" + endString : text = `x: ${points[1].toFixed(2)}, y: ${points[0].toFixed(2)}`;
+    geometryType === "line" ? this.calculatedUnits = geometry.toFixed(0) + " m" : this.calculatedUnits = `x: ${points[1].toFixed(2)}, <br>y: ${points[0].toFixed(2)}`
     const graphic = this.menuToolsService.createLineOrPointLabelGraphic(points, text, this.view);
     this.view.graphics.add(graphic);
   }

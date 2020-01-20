@@ -53,20 +53,23 @@
 			<div [hidden]="buffer.valid || buffer.pristine" class="alert alert-danger buffer-alert">
 				Rašykite sveikais skaičiais arba naudokite , simbolį
 			</div>
-			<div class="input-field col s12"><br />
-				<div class="form-title">Perdengti su temos sluoksniu</div>
-				<select required class="form-control" id="themeSelect" [(ngModel)]="analyzeParams.inputlayer" name="themeSelect" #themeSelect="ngModel">
-					<!-- <option value="null" disabled>Pasirinkite temą</option> -->
-					<option value="null">Pasirinkite temą</option>
-					<option #theme *ngFor="let layer of measureMapService.themeLayers; index as i"  [ngValue]="i">{{layer.name}}</option>
-				</select>
-			</div>
-
-			<div class="feature-results">
-				<div class="feature-count">
-					<p class="feature-title feature-units">Perdengtų rezultatų skaičius:</p>
-					<span [ngStyle]="!measureMapService.calculateCount && {'display': 'none'}" class="feature-units">{{measureMapService.calculateCount}}</span>
-					<span [ngStyle]="measureMapService.calculateCount && {'display': 'none'}" class="feature-units">-</span>
+			
+			<div *ngIf="measureMapService.themeLayers.length > 0 || themeNameService.currentThemeName !== 'projektai'">
+				<div class="input-field col s12"><br />
+					<div class="form-title">Perdengti su temos sluoksniu</div>
+					<select required class="form-control" id="themeSelect" [(ngModel)]="analyzeParams.inputlayer" name="themeSelect" #themeSelect="ngModel">
+						<!-- <option value="null" disabled>Pasirinkite temą</option> -->
+						<option value="null">Pasirinkite temą</option>
+						<option #theme *ngFor="let layer of measureMapService.themeLayers; index as i"  [ngValue]="i">{{layer.name}}</option>
+					</select>
+				</div>
+	
+				<div class="feature-results">
+					<div class="feature-count">
+						<p class="feature-title feature-units">Perdengtų rezultatų skaičius:</p>
+						<span [ngStyle]="!measureMapService.calculateCount && {'display': 'none'}" class="feature-units">{{measureMapService.calculateCount}}</span>
+						<span [ngStyle]="measureMapService.calculateCount && {'display': 'none'}" class="feature-units">-</span>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -66,10 +66,7 @@ import values from 'lodash-es/values';
       margin: 0;
       text-align: center;
       width: 100%;
-      height: 100%;
       background-color: #3a3a3a;
-      position: fixed;
-      overflow-x: auto;
     }
 		@media only screen and (min-width: 480px) {
 			.row.themes-component h1 {

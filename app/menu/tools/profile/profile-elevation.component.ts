@@ -63,6 +63,9 @@ Chart.controllers.customChart = customChart;
    .canvas-wrapper.canvas-full {
      height: calc(100vh - 130px);
    }
+   :host-context(.map-projects) .canvas-wrapper {
+		 width: calc(100vw - 385px)
+   }
 	 p {
 		text-align: right;
 		position: relative;

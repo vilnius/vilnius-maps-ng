@@ -9,7 +9,7 @@
 <menu-layers *ngIf="themeName!=='projektai'" id="layers" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-layers>
 <menu-legend-itv *ngIf="themeName==='projektai'" id="legend" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-legend-itv>
 <menu-legend *ngIf="themeName!=='projektai'" id="legend" class="sub-menu module animate color-layers default-legend" [class.mobile-active]="mobileActive"></menu-legend>
-<menu-tools (close)=onClose($event) id="tools" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-tools>
+<menu-tools [currentTheme]="themeName" (close)=onClose($event) id="tools" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive"></menu-tools>
 <div id="open-data" class="sub-menu module animate color-layers" [class.mobile-active]="mobileActive">
   <div class="menu-header">
 		<p>Atviri duomenys:</p>
@@ -23,8 +23,11 @@
 </div>
 <!--End Navigation content-->
 
-<!-- Special ng-container for adding Profile Component -->
+<!-- Special ng-container for adding TOOLS Components -->
 <ng-container *ngComponentOutlet="ProfileToolContainerComponent"></ng-container>
+<ng-container *ngIf="swipeToolOn | async">
+	<ng-container *ngComponentOutlet="SwipeToolContainerComponent"></ng-container>
+</ng-container>
 
 <!-- top menu -->
 <div class="modes" [class.active-tools]="toolsActive">
@@ -32,11 +35,11 @@
 		<div id="menu-top" class="mobile-menu mobile-menu-close" (click)="activateMenuBtn()">
 			<a class="button close animate" (click)="closeToggle()" title="Uždaryti">✕</a>
 		</div>
-    <a id="menu-theme"  class="cell line-right button nav-menu icon big" (click)="targetTheme()"><i class="fa fa-th" aria-hidden="true"></i>Temos</a>
-    <a id="menu-layers" class="cell line-right button nav-menu icon big animate" (click)="targetLayers()"><i class="fa fa-list"></i> Sluoksniai</a>
-    <a id="menu-legend" class="cell pad1y button hide-mobile nav-menu line-right col4 icon paint animate" (click)="targetLegend()"><i class="fa fa-th-large"></i> Žymėjimas </a>
-    <a id="menu-tools" class="cell pad1y button nav-menu hide-mobile line-right col4 icon animate" (click)="targetTools()"><i class="fa fa-cog"></i> Įrankiai</a>
-    <a id="menu-open-data" class="cell pad1 button nav-menu hide-mobile col4 icon animate" (click)="targetOpenData()"><i></i>Atviri duomenys</a>
+    <a id="menu-theme"  class="cell line-right button nav-menu icon big" (click)="targetTheme(); clickMenu($event)"><i class="fa fa-th" aria-hidden="true"></i>Temos</a>
+    <a id="menu-layers" class="cell line-right button nav-menu icon big animate" (click)="targetLayers(); clickMenu($event)"><i class="fa fa-list"></i> Sluoksniai</a>
+    <a id="menu-legend" class="cell pad1y button hide-mobile nav-menu line-right col4 icon paint animate" (click)="targetLegend(); clickMenu($event)"><i class="fa fa-th-large"></i> Žymėjimas </a>
+    <a id="menu-tools" class="cell pad1y button nav-menu hide-mobile line-right col4 icon animate" (click)="targetTools(); clickMenu($event)"><i class="fa fa-cog"></i> Įrankiai</a>
+    <a id="menu-open-data" class="cell pad1 button nav-menu hide-mobile col4 icon animate" (click)="targetOpenData(); clickMenu($event)"><i></i>Atviri duomenys</a>
   </div>
   <div id="menu-wrapper" [class.active-wrapper]="mobileActive"  (click)="activateMenuBtn()"></div>
 </div>

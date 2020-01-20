@@ -30,11 +30,11 @@ export class ProfileToolService {
     private menuToolsService: MenuToolsService
   ) { }
 
-	closeMeasure() {
+	closeProfile() {
 		return this.toolActive = false;
 	}
 
-	toggleMeasure() {
+	toggleProfile() {
 		return this.toolActive = !this.toolActive;
 	}
 

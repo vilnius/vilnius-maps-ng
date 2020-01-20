@@ -7,7 +7,6 @@
     "sourceMap": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "removeComments": false,
     "noImplicitAny": false,
     "lib": [
@@ -22,9 +21,6 @@
       "arcgis-js-api"
     ]
   },
-	"include": [
-    "app/**/*"
-  ],
 	"files": [
     "app/options.ts"
   ]

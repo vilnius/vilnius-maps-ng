@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Renderer2, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from "@angular/router";
 
 import { MapService } from '../../map.service';
@@ -23,7 +23,8 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'esri-map',
-  templateUrl: './app/themes/projects/map-projects.component.html'
+  templateUrl: './app/themes/projects/map-projects.component.html',
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MapProjectsComponent implements OnInit, OnDestroy {
   //get child component reference
@@ -69,6 +70,7 @@ export class MapProjectsComponent implements OnInit, OnDestroy {
 
   constructor(
 		private _mapService: MapService,
+		private cdr: ChangeDetectorRef,
 		private menuService: MenuService,
 		private metaService: MetaService,
 		private projectsService: ProjectsListService,
@@ -117,11 +119,13 @@ export class MapProjectsComponent implements OnInit, OnDestroy {
     this.projectsService.runProjectsQueryExtent(itvFeatureUrl, extent, sqlStr).then(() => {
       this.projectsListArr = this.projectsService.getProjects();
       this.projectsListArrToComponent = this.projectsService.getProjects();
+			this.cdr.detectChanges();
     });
     //execute queryTask on projects without extent
     let inputValue = this.autocompleteValue;
     this.projectsService.runProjectsQuery(itvFeatureUrl, sqlStr, inputValue).then(() => {
       this.fullListChanged = this.projectsService.getAllProjects();
+			this.cdr.detectChanges();
     });
   }
 

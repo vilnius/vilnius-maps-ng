@@ -19,25 +19,36 @@ export class BuildingsLayersService {
     const map = this.mapService.returnMap();
 
     //all theme layers will be added to common group layer
-    const mainGroupLayer = this.mapService.initGroupLayer(themeName + 'group', 'Pastatai', 'show');
+    const mainGroupLayer = this.mapService.initGroupLayer(themeName + 'group', MapOptions.themes.buildings.name, 'show');
     map.add(mainGroupLayer);
 
-    forIn(themeLayers, (layer, key) => {
-      const response = this.mapService.fetchRequest(layer.dynimacLayerUrls)
-      const popupEnabled = false;
-
+    mainGroupLayer.on("layerview-create", (event) => {
       //create group and add all grouped layers to same group, so we could manage group visibility
-      const groupLayer = this.mapService.initGroupLayer(key + 'group', 'Šildymo sezono reitingas', 'hide-children');
+      const groupLayer = this.mapService.initGroupLayer('buildingsInneGroup', 'Šildymo sezono klasės ir kvartalai pagal renovacijos programą', 'hide-children');
       mainGroupLayer.add(groupLayer);
-      //add feature layer with opacity 0
-      this.mapService.pickCustomThemeLayers(response, layer, key, queryParams, groupLayer, 2);
 
-			this.mapService.pickMainThemeLayers(layer, key, queryParams, popupEnabled, groupLayer);
-		});
+      groupLayer.on("layerview-create", (event) => {
+        forIn(themeLayers, (layer, key) => {
+          const popupEnabled = false;
+      
+          // add feature layer with opacity 0
+          // order is important
+          this.mapService.pickCustomThemeLayers(layer, key + '-kvartalai', queryParams, groupLayer, 3);
+          this.mapService.pickCustomThemeLayers(layer, key, queryParams, groupLayer, 2);
+    
+          this.mapService.pickMainThemeLayers(layer, key, queryParams, popupEnabled, groupLayer);
+        });
+    
+        //set raster layers
+        const rasterLayers = this.mapService.getRasterLayers();
+        this.mapService.setRasterLayers(rasterLayers);
+      });
 
-    //set raster layers
-    const rasterLayers = this.mapService.getRasterLayers();
-    this.mapService.setRasterLayers(rasterLayers);
+    });
+
+ 
+
+
   }
 
 }

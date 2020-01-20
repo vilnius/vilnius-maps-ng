@@ -25,7 +25,7 @@ import { MapWidgetsService } from './map-widgets.service';
         <h3>{{sidebarHeatContent?.ADRESAS}}</h3>
         <p class="split-half">
           <span class="font-l">sezonas<br /></span>
-          {{sidebarHeatContent.SEZONAS}}-{{sidebarHeatContent.SEZONAS+1}}
+          {{sidebarHeatContent.REITMAXMET}}-{{sidebarHeatContent.REITMAXMET+1}}
         </p>
         <p class="split-half">
           <span>klasė<br /></span>
@@ -36,7 +36,7 @@ import { MapWidgetsService } from './map-widgets.service';
         <div class="clear-both"></div>
         <p class="split-half">
           <span class="font-l">sezonas<br /></span>
-          {{sidebarHeatContent.SEZONAS-1}}-{{sidebarHeatContent.SEZONAS}}
+          {{sidebarHeatContent.REITMAXMET-1}}-{{sidebarHeatContent.REITMAXMET}}
         </p>
         <p class="split-half">
           <span>klasė<br /></span>
@@ -47,7 +47,7 @@ import { MapWidgetsService } from './map-widgets.service';
         <div class="clear-both"></div>
         <p class="split-half">
           <span class="font-l">sezonas<br /></span>
-          {{sidebarHeatContent.SEZONAS-2}}-{{sidebarHeatContent.SEZONAS-1}}
+          {{sidebarHeatContent.REITMAXMET-2}}-{{sidebarHeatContent.REITMAXMET-1}}
         </p>
         <p class="split-half">
           <span>klasė<br /></span>
@@ -504,7 +504,7 @@ export class SidebarComponent implements OnChanges {
       }, 200);
       this.lastHeatingYear = this.sidebarHeatContent.SEZONAS;
       // get data by months
-      this.mapWidgetsService.queryHeatingDataByMonths(this.sidebarHeatContent.SEZONAS, this.sidebarHeatContent.ID_NAMO).then(data => {
+      this.mapWidgetsService.queryHeatingDataByMonths(4, this.sidebarHeatContent.SEZONAS, this.sidebarHeatContent.ID_NAMO).then(data => {
         this.heatingMonthsData = data;
         this.heatMonthsChart && this.initHeatMonthsGraphic();
       });

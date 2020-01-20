@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ElementRef, Renderer2, ViewChild } from '@angular/core';
 
 import { MapService } from '../../map.service';
 import { ViewService } from '../../themes/default/view.service';
@@ -7,13 +7,14 @@ import { ShareButtonService } from '../../services/share-button.service';
 import { MapOptions } from '../../options';
 
 import watchUtils = require("esri/core/watchUtils");
+import { MapStreamService } from '../../services/streams/map-stream.service';
 
 @Component({
   selector: 'esri-map-view',
   templateUrl: './app/components/common/map-view.component.html',
   styles: [`
 		.alert {
-	    padding: 5px 10px;
+	    padding: 6px 10px;
 	    margin-top: 10px;
 			font-size: 14px;
 	}
@@ -29,9 +30,9 @@ import watchUtils = require("esri/core/watchUtils");
 	}
 `]
 })
-export class MapViewComponent implements OnInit {
+export class MapViewComponent implements OnInit, AfterViewInit {
   @ViewChild('mainContainer') mainContainer: ElementRef;
-  @ViewChild('bar') bar: ElementRef;
+  @ViewChild('bar', {read: ElementRef}) private bar: ElementRef;
 
   queryParams = { basemap: null };
   maintenanceOn = false;
@@ -45,8 +46,9 @@ export class MapViewComponent implements OnInit {
 	isCopiedToClipboard = false;
 
   constructor(
-    private el: ElementRef,
+    private rend: Renderer2,
     private mapService: MapService,
+    private mapStreamService: MapStreamService,
     private viewService: ViewService,
     private basemapsService: BasemapsService,
     private shareButtonService: ShareButtonService) { }
@@ -94,37 +96,76 @@ export class MapViewComponent implements OnInit {
     //set map ref
     this.viewService.setmapElementRef(this.mainContainer);
 
-    this.mapService.setProgressBar(this.bar);
 
-    this.view.then((view) => {
-      watchUtils.whenTrue(view, "updating", () => {
-        //console.log('%c VIEW', ' color: green;font-size: 23px', this.view)
-        this.el.nativeElement.querySelector('#progress-load').style.display = "block";
-        const intervalProgress = setInterval(() => {
-					if (view) {
-						if (!view.updating) {
-							//console.log('%c intervalProgress', "font-size: 22px", intervalProgress);
-							clearInterval(intervalProgress);
-							this.el.nativeElement.querySelector('#progress-load').style.display = "none";
-							//console.log('%c intervalProgress end', "font-size: 22px", intervalProgress);
-						}
+  }
 
-					}
+	ngAfterViewInit() {
+		this.mapService.setProgressBar(this.bar);
 
-        }, 50)
-      });
+		this.view.then((view) => {
+			watchUtils.whenTrue(view, "updating", () => {
+				if (this.bar && this.bar.nativeElement) {
+					this.rend.setStyle(this.bar.nativeElement, 'display', 'block');
 
-
-      this.view.on("layerview-create", (event) => {
-        //console.log(event.layer.loadStatus)
-        if (event.layer.id !== "allLayers") {
-          setTimeout(() => {
-            this.el.nativeElement.querySelector('#progress-load').style.display = "none";
-          }, 600);
-          //console.log('%c PROGRESS', "color: red; font-size: 22px", this.el.nativeElement.querySelector('#progress-load'), event.layer.id, this.bar)
+          this.addLoading(view);
         }
-      });
-    });
+			});
+
+      // Not using this approach 
+      // Because we're not controlling third party services and their order
+      // so if theme has stream layers not loaded last, we will not see progress laoding bar
+			// this.view.on("layerview-create", (event) => {
+			// 	console.log(event.layer);
+			// 	if (event.layer.id !== "allLayers" && this.bar && event.layer.type !== 'stream') {
+			// 		setTimeout(() => {
+			// 			// this.rend.setStyle(this.bar.nativeElement, 'display', 'none');
+			// 		}, 600);
+      //   } else if ( event.layer.type === 'stream') {
+      //     this.addLoading(view);
+      //   }
+        
+			// });
+		});
+  }
+
+  addLoading(view) {
+    const intervalProgress = setInterval(() => {
+      if (view) {
+        if (!view.updating) {
+          clearInterval(intervalProgress);
+          this.rend.setStyle(this.bar.nativeElement, 'display', 'none');
+        }
+
+      }
+
+      // do not show loading bar when connecting to websocket
+      // the bar will run till connection ends
+      const streamsViews = this.excludeStreamLayersUpdates(view);
+      if (streamsViews.length > 0) {
+        clearInterval(intervalProgress);
+        // currently only one stream layer per theme
+        setTimeout(() =>{ this.rend.setStyle(this.bar.nativeElement, 'display', 'block'), 2000});
+
+        if (!streamsViews[0].layer.visible) {
+          this.rend.setStyle(this.bar.nativeElement, 'display', 'none');
+        }
+
+        try {
+          const dataEvent = this.mapStreamService.getStreamLayerView().on('data-received', (e)=> {
+            this.rend.setStyle(this.bar.nativeElement, 'display', 'none');
+            dataEvent.remove();
+          });
+        } catch (er) {
+          this.rend.setStyle(this.bar.nativeElement, 'display', 'none');
+        }
+
+      }
+
+    }, 50);
+  }
+  
+  excludeStreamLayersUpdates(view)  {
+    return view.layerViews.items.filter(item => item.layer.type === 'stream' && item.updating)
   }
 
 }

@@ -1,0 +1,108 @@
+:host .extract-content {
+  margin-top: 20px;
+  border-top: 1px solid #8a8d93;
+}
+
+:host .extract-content .esri-widget.esri-widget-button {
+  width: 100%;
+  height: auto;
+  margin-top: 5px;
+  font-size: 16px;
+  color: #53575d;
+  border: none;
+  display: block;
+  border-radius: 2px;
+  background: none;
+}
+
+:host .extract-content button {
+  width: 100%;
+  margin: 0;
+  padding: 10px;
+  background-color: #cbcbcb;
+  border: none;
+  border-radius: 2px;
+  font-size: 16px;
+}
+
+:host .extract-content .alert .close {
+  width: auto;
+  padding: 0;
+  background-color: rgba(255, 255, 255, 0);
+}
+
+:host .extract-content button.button-margin-top {
+  margin-top: 10px;
+}
+
+.alert-margin-top {
+  margin-top: 20px;
+  margin-bottom: 0;
+}
+
+:host .extract-content .active button, :host .extract-content .active .esri-widget.esri-widget-button {
+  background-color: #53565d;
+  color: #f8f8f8;
+}
+
+:host .extract-content button.esri-icon-clear, :host .extract-content button.button-clear {
+  background-color: #fbd5d7;
+}
+
+:host .extract-content button.esri-icon-clear:hover, :host .extract-content button.esri-icon-clear:hover p {
+  background-color: #e61c24;
+}
+
+:host .extract-content button p {
+  font-family: "Avenir Next W00", "Avenir Next", Avenir;
+  display: inline;
+}
+
+:host .extract-content .active button p {
+  color: #f8f8f8;
+}
+
+:host .extract-content .alert button.close:hover {
+  color: #e61c24;
+}
+
+:host .extract-content .alert-danger {
+  cursor: pointer;
+}
+
+:host .extract-content button:hover, :host .extract-content button:hover p {
+  background-color: #53565d;
+  color: #f8f8f8;
+}
+
+a {
+  background: #e61c24;
+  color: white !important;
+  padding: 3px;
+  margin: 10px 2px 10px 2px;
+  display: inline-block;
+  border-radius: 2px;
+}
+
+h5 {
+  padding: 12px 15px;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.alert-danger ol, ul {
+  margin-bottom: 0;
+  padding-inline-start: 15px;
+}
+
+.alert.alert-success,
+.mat-error {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.vp-mat-bar {
+  position: relative !important;
+  width: 186px;
+}

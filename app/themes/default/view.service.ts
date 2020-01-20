@@ -4,9 +4,10 @@ import { MapOptions } from '../../options';
 import { MapService } from '../../map.service';
 import { MenuService } from '../../menu/menu.service';
 
-import findKey from 'lodash-es/findKey';
-import pick from 'lodash-es/pick';
 import forIn from 'lodash-es/forIn';
+import { IStreamConfig } from '../../services/streams/IStreamConfig';
+import { MapStreamService } from '../../services/streams/map-stream.service';
+import values from 'lodash-es/values';
 
 @Injectable()
 export class ViewService {
@@ -15,7 +16,8 @@ export class ViewService {
 
   constructor(
     private mapService: MapService,
-    private menuService: MenuService
+    private menuService: MenuService,
+    private mapStreamService: MapStreamService
   ) { }
 
   setmapElementRef(el: ElementRef): void {
@@ -32,9 +34,7 @@ export class ViewService {
     //create theme main layers grouped
     //const themeGroupLayer = this.mapService.initGroupLayer("theme-group", "Main theme layers", "show");
 
-    //using lodash find and pick themeLayer from options
-    let themeName = findKey(MapOptions.themes, ['id', snapshotUrl]);
-    let themeLayers = pick(MapOptions.themes, themeName)[themeName]["layers"];
+    let themeLayers = this.mapService.getThemeOptions(snapshotUrl);
 
     forIn(themeLayers, (layer, key) => {
       this.mapService.pickMainThemeLayers(layer, key, queryParams);
@@ -42,6 +42,16 @@ export class ViewService {
 
     //set raster layers
     this.mapService.setRasterLayers(rasterLayers);
+
+    // set stream layers if exists
+    const streamsConfig: IStreamConfig = this.mapService.getThemeOptions(snapshotUrl, 'streamLayers');
+    if (streamsConfig) {
+      for (const prop in streamsConfig) {
+        const config = streamsConfig[prop];
+        this.mapStreamService.createStreamService(config, prop, queryParams);
+      } 
+    }
+
   }
 
   //create sub Layers

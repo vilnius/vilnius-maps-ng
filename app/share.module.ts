@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from './material.module';
 import { FormsModule } from '@angular/forms';
@@ -14,14 +14,19 @@ import { MapWidgetsService } from './map-widgets/map-widgets.service';
 import { IdentifyService } from './services/identify/identify.service';
 import { FeatureQueryService } from './query/feature-query.service';
 import { ShareButtonService } from './services/share-button.service';
+import { ThemeNameService } from './services/theme-name.service';
 import { PointAddRemoveService } from './query/point-add-remove.service';
-import { ScaleAndLogoComponent, BasemapToggle, CreditsCompponent, CompassComponent, SidebarComponent, MaintenanceComponent } from './map-widgets';
+import { ScaleAndLogoComponent, BasemapToggle, CreditsCompponent, CompassComponent, MaintenanceComponent, LocateCenterComponent } from './map-widgets';
+
+import { RgbaColorDirective } from './map-widgets';
+
 
 import 'hammerjs';
 import { NgxPopperModule } from 'ngx-popper';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { PERFECT_SCROLLBAR_CONFIG } from 'ngx-perfect-scrollbar';
 import { PerfectScrollbarConfigInterface } from 'ngx-perfect-scrollbar';
+import { MapStreamService } from './services/streams/map-stream.service';
 
 const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
   suppressScrollX: true
@@ -31,51 +36,61 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
 @NgModule({
   imports: [
     CommonModule,
-		FormsModule,
+    FormsModule,
     PerfectScrollbarModule,
     //3rd party imports
-		MaterialModule,
+    MaterialModule,
     NgxPopperModule
   ],
   declarations: [
-		HideElementseDirective,
+    HideElementseDirective,
+    RgbaColorDirective,
     ScaleAndLogoComponent,
     BasemapToggle,
     CreditsCompponent,
     CompassComponent,
-    SidebarComponent,
-    MaintenanceComponent
+    MaintenanceComponent,
+    LocateCenterComponent
   ],
   exports: [
-		HideElementseDirective,
+    HideElementseDirective,
+    RgbaColorDirective,
     CommonModule,
-		FormsModule,
+    FormsModule,
     PerfectScrollbarModule,
-		MaterialModule,
+    MaterialModule,
     NgxPopperModule,
     ScaleAndLogoComponent,
     BasemapToggle,
     CreditsCompponent,
     CompassComponent,
-    SidebarComponent,
     MaintenanceComponent,
-  ],
-  providers: [
-    MetaService,
-    MapDefaultService,
-    ProjectsListService,
-    ProjectsFilterService,
-    SearchService,
-    SelectorsService,
-    MapWidgetsService,
-    FeatureQueryService,
-    IdentifyService,
-    ShareButtonService,
-    PointAddRemoveService,
-    {
-      provide: PERFECT_SCROLLBAR_CONFIG,
-      useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG
-    }
+    LocateCenterComponent
   ]
 })
-export class ShareModule { }
+export class ShareModule {
+  static forRoot(): ModuleWithProviders {
+    return {
+      ngModule: ShareModule,
+      providers: [
+        MetaService,
+        MapDefaultService,
+        ProjectsListService,
+        ProjectsFilterService,
+        SearchService,
+        SelectorsService,
+        MapWidgetsService,
+        FeatureQueryService,
+        IdentifyService,
+        ShareButtonService,
+        ThemeNameService,
+        PointAddRemoveService,
+        MapStreamService,
+        {
+          provide: PERFECT_SCROLLBAR_CONFIG,
+          useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG
+        }
+      ]
+    }
+  }
+}

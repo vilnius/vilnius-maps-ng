@@ -13,12 +13,18 @@ Dowload and run the following at the command line to run the app in development 
 npm install
 npm start
 ```
-Create production build:
+
+Create dev build:
 ```bash
 npm run build
 ```
-Note: currently using express js and ejs in production  
 
+Create production build:
+```bash
+npm run build --prod
+```
+Note: currently using express js and ejs in production  
+  
 Check the npm packages described in the package.json.  
 
 ## Configuration file
@@ -80,7 +86,7 @@ For older commits use package.json with match version exactly instead of compati
 
 
 NPM 6.1.0  
-Node v8.11.2  
+Node v10.x  
 Webpack 4.x  
 
 ## ToDo

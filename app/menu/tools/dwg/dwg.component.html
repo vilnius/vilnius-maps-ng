@@ -1,0 +1,24 @@
+<button id="measure-button" class="tool-button" (click)="toggleExtract()" [class.active]="toolActive">
+	<span [ngClass]="['svg-measure', icon]"></span>
+	{{ title }} traukimas
+</button>
+
+<div *ngIf="toolActive" id="extract-container" class="measure-tool buffer-tool">
+	<div id="measure-menu" class="measure" [class.measure-active]="toolActive" draggable="true">
+		<span id="close-measure" (click)="closeMeasure()" [class.measure-active]="toolActive">
+			<svg width="15" height="15" xmlns="http://www.w3.org/2000/svg" xmlns:xlink= "http://www.w3.org/1999/xlink">
+				<image xlink:href="../../app/img/svg/close-r.svg" x="0" y="0" height="15px" width="15px"/>
+			</svg>
+
+		</span>
+		<span id="drag-measure" [class.print-active]="toolActive">
+			<svg width="15" height="15" xmlns="http://www.w3.org/2000/svg" xmlns:xlink= "http://www.w3.org/1999/xlink">
+				<image xlink:href="../../app/img/svg/move.svg" x="0" y="0" height="15px" width="15px"/>
+			</svg>
+		<span title="Keiskite padėti pelės pagalba">- keiskite padėti</span>
+		</span>
+
+		<dwg-container></dwg-container>
+
+	</div>
+</div>

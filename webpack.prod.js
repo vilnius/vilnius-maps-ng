@@ -6,6 +6,11 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
+require('dotenv').config();
+
+const PRODUCTION = process.env.NODE_ENV === 'production';
+console.log('PRODUCTION: ', PRODUCTION);
+
 module.exports = {
   entry: {
     main: './app/main.ts', // entry point for your application code
@@ -54,8 +59,16 @@ module.exports = {
         }
       },
       {
-        test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader"]
+        test: /\.(css|scss)$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader'
+          },
+          {
+            loader: 'sass-loader'
+          }
+        ]
       }
     ]
   },
@@ -78,7 +91,8 @@ module.exports = {
       }
     }),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('production')
+      'process.env.NODE_ENV': PRODUCTION ? JSON.stringify(process.env.NODE_ENV) : JSON.stringify('development'),
+      'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN)
     }),
     new webpack.ContextReplacementPlugin(
       /angular(\\|\/)core(\\|\/)@angular|fesm5/,
@@ -98,5 +112,5 @@ module.exports = {
       callback();
     }
   ],
-  devtool: 'none'
+  devtool: 'source-map'
 };

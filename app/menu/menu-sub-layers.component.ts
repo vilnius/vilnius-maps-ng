@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 
 import { MapService } from '../map.service';
 import { MenuService } from './menu.service';
@@ -20,7 +20,7 @@ import { MenuService } from './menu.service';
 })
 
 export class MenuSubLayersComponent {
-
+  @Output() hideFirstLayer = new EventEmitter<boolean>();
   state = false;
 
   constructor(
@@ -28,19 +28,56 @@ export class MenuSubLayersComponent {
     private menuService: MenuService
   ) { }
 
+  ngOnInit(): void {
+    //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
+    //Add 'implements OnInit' to the class.
+    this.menuService.subLayersActivation.subscribe((isActivated) => {
+      this.reorder(isActivated);
+    });
+  }
+
+
+  reorder(isActivated: boolean) {
+      // kind of hackish, wee need to reorder layers because we hiding first layer in main layers menu
+      // and showing first layer in sublayers menu
+      const map = this.mapService.returnMap();
+      const index = map.layers.items.length - 1;
+      const layer = map.findLayerById("allLayers");
+      map.reorder(layer, 0);
+
+      if (map) {
+        const layer = map.findLayerById("allLayers");
+        if (isActivated) {
+          layer.listMode = 'show';
+          this.hideFirstLayer.emit(true)
+  
+        } else {
+          layer.listMode = 'hide';
+          this.hideFirstLayer.emit(false)
+        }
+    
+  
+      }
+
+  }
+
   toggleSubState() {
     const subLayersSate = this.menuService.getSubLayersState();
 
-    //add sublayers if allLayers group layer is not full defined
+    //add sublayers if allLayers group layer is not fully defined
     if (!subLayersSate) {
       //change subLayersState (only on first init)
       this.menuService.setSubLayersState();
-      const allLayerGroup = this.mapService.getAllLayers();
-      const map = this.mapService.returnMap();
-      const layer = map.findLayerById("allLayers");
+      this.reorder(subLayersSate);
 
-      //!this.state ? layer.sublayers = allLayerGroup : '';
+      const map = this.mapService.returnMap();
+      const allLayerGroup = this.mapService.getAllLayers();
+      const layer = map.findLayerById("allLayers");
+      layer.sublayers.removeAll();
       layer.sublayers.addMany(allLayerGroup);
+
+    } else {
+      this.hideFirstLayer.emit(false)
     }
 
     this.menuService.toggleSubListState();

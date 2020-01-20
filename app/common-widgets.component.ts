@@ -9,6 +9,7 @@ import { Component, Input } from '@angular/core';
       <scale-map [view]="view"></scale-map>
       <compass-map [view]="view"></compass-map>
       <credits-map></credits-map>
+      <locate-center-map></locate-center-map>
       <basemap-toggle [view]="view"></basemap-toggle>
     </div>
     `

@@ -9,9 +9,9 @@ export class MapWidgetsService {
   constructor(private mapService: MapService) { }
 
   // fetch heating data based on building id
-  queryHeatingDataByMonths(year: number, id: number) {
+  queryHeatingDataByMonths(layerNumber: number, year: number, id: number) {
     // add heating data url, check REST endpoint
-    const url = MapOptions.themes.buildings.layers.silumosSuvartojimas.dynimacLayerUrls + '/3';
+    const url = `${MapOptions.themes.buildings.layers.silumosSuvartojimas.dynimacLayerUrls}/${layerNumber}`;
     const query = this.mapService.addQuery();
     const queryTask = this.mapService.addQueryTask(url);
 
@@ -95,7 +95,6 @@ export class MapWidgetsService {
     query.outFields = ['*'];
     query.where = `TIPINIS_PR LIKE '${type}'`;
     return queryTask.execute(query).then((result) => {
-      //console.log('%c REZULT C ', 'background:orange; color: white', result.features);
       const counted = this.countHeatingResultsByClass(result.features, currentRate);
       return counted;
     }, (error) => {
@@ -115,25 +114,28 @@ export class MapWidgetsService {
 
     //filter dynamic layers
     const dynLayers = map.findLayerById('silumosSuvartojimas')
-    dynLayers.sublayers.items["0"].sublayers.items.forEach((item) => {
-      toggleState ? item.definitionExpression = `TIPINIS_PR='${type}'` : item.definitionExpression = '';
-    })
+    dynLayers.sublayers.items.forEach(item => {
+      if (item.sublayers && item.sublayers.length > 0)  {
+        item.sublayers.items.forEach((subItem) => {
+          toggleState ? subItem.definitionExpression = `TIPINIS_PR='${type}'` : subItem.definitionExpression = '';
+        })
+      }
+      
+    });
+
   }
 
   selectKindergartens(ids: number[], toggleState, buffer = null) {
     const map = this.mapService.returnMap();
     const view = this.mapService.getView();
     const idsQueryString = ids.join(', ');
-    //console.log(idsQueryString)
     //filter feature layers
     const featureLayer = map.findLayerById('feature-darzeliai');
-    //console.log(featureLayer);
     (toggleState && (ids.length > 0)) ? featureLayer.definitionExpression = `GARDEN_ID in (${idsQueryString})` : featureLayer.definitionExpression = 'GARDEN_ID = 9999';
 
     //filter dynamic layers
     const dynLayers = map.findLayerById('darzeliai')
     dynLayers.sublayers.items.forEach((item) => {
-      //console.log(item)
       //id 0 is layer of kindergartens
       if (item.id === 0) {
         (toggleState && (ids.length > 0)) ? item.definitionExpression = `GARDEN_ID in (${idsQueryString})` : item.definitionExpression = 'GARDEN_ID = 9999';
@@ -142,11 +144,8 @@ export class MapWidgetsService {
     if (ids.length > 0) {
       featureLayer.queryExtent().then(function(results) {
         // go to the extent of the results satisfying the query
-        //console.log('queryExtent', results, view.zoom)
-        //console.log('buf', buffer)
         const extent = results.extent;
         const width = ((extent.xmax - extent.xmin) / view.width) * 450;
-        //console.log('px', view.width, extent.xmax - extent.xmin, (extent.xmax - extent.xmin) / view.width);
         extent.xmin = extent.xmin - width;
         extent.ymin = extent.ymin - width;
         extent.xmax = extent.xmax + width;
@@ -165,8 +164,7 @@ export class MapWidgetsService {
           }, MapOptions.animation.options);
         } else {
           view.goTo({
-            target: buffer ? buffer : extent//,
-            //zoom: 1
+            target: buffer ? buffer : extent
           }, MapOptions.animation.options);
         }
       });
@@ -178,7 +176,6 @@ export class MapWidgetsService {
   }
 
   filterKindergartents(dataStore, { eldership, groupByAge, groupByLang, groupByName, groupByType, hasVacancy }) {
-    //console.log("STORE", dataStore, '\n', eldership, groupByAge, groupByLang, groupByName, groupByType, hasVacancy)
     const gartens = dataStore.mainInfo;
     const elderate = dataStore.elderates.filter(data => data.ID === eldership)[0];
     const eldarateLabel = elderate ? elderate.LABEL : '';

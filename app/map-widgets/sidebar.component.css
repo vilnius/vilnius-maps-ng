@@ -163,8 +163,6 @@
 }
 .sidebar-right canvas {
   background-color: #fff;
-  height: 400px !important;
-  width: 318px !important;
 }
 .sidebar-right .canvas-wrapper {
   display: block;

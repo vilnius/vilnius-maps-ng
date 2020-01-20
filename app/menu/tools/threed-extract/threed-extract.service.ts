@@ -12,6 +12,8 @@ import Graphic = require('esri/Graphic');
 import Polygon = require('esri/geometry/Polygon');
 import FeatureSet = require('esri/tasks/support/FeatureSet');
 import geometryEngine = require('esri/geometry/geometryEngine');
+import { Observable, interval, of } from 'rxjs';
+import { switchMapTo, tap, filter, map, take } from 'rxjs/operators';
 
 @Injectable()
 export class ThreeDExtractService {
@@ -187,16 +189,30 @@ export class ThreeDExtractService {
     })
   }
 
+  getJobinfo(): Observable<string> {
+    const geo = this.geo as any;
+    const jobs = Object.keys(geo._updateTimers);
+    return interval(1000)
+    .pipe(
+      switchMapTo(of(jobs)
+        .pipe(
+          filter(jobs => jobs.length > 0),
+          map(jobs => jobs[0])
+        )
+      ),
+      take(1)
+    )
+  }
+
   cancelJob() {
     if (this.job) {
       this.job.cancel();
-      // add timeout to get API jobId, default updateDelay is 1000 ms
-      setTimeout(() => {
-        const geo = this.geo as any;
-        const jobId = Object.keys(geo._updateTimers)[0];
-        this.geo.cancelJob(jobId);
-      }, 2000)
-    }
+        this.getJobinfo().subscribe(jobId => {
+          this.geo.cancelJob(jobId)}
+        )
+
+    } 
+
   }
 
 }

@@ -87,7 +87,6 @@ export class ShareButtonService {
     //small fix: add layer id that doen't exist, for example 999, in order to prevent all layers identification when all lists are turned off
     this.visibleLayers.identificationsIds[item.layer.id] = [999];
     this.visibleLayers.visibilityIds[item.layer.id] = [999];
-    //console.log("IDS", item)
 
     //do not identify layer if it is Raster
     if ((item.visible) && (!item.layer.isRaster) && (item.layer.sublayers)) {
@@ -115,7 +114,6 @@ export class ShareButtonService {
                 if (subsublayer.visible) {
                   this.visibleLayers.visibilityIds[item.layer.id].push(subsublayer.id);
                   if ((subMaxScale < viewScale) && (viewScale < subMinScale)) {
-                    //console.log("Sub subsubLayer", subLayers);
 
                     if (subsublayer.sublayers) {
                       //4 layer if exist
@@ -128,9 +126,7 @@ export class ShareButtonService {
                         if (subsubsublayer.visible) {
                           this.visibleLayers.visibilityIds[item.layer.id].push(subsubsublayer.id);
                           if ((subsubsublayer.visible) && (subMaxScale < viewScale) && (viewScale < subMinScale)) {
-                            //console.log("SubSUB subsubLayer", subsubsublayers);
                             this.visibleLayers.identificationsIds[item.layer.id].push(subsubsublayer.id);
-
                           }
                         }
                       });
@@ -149,6 +145,11 @@ export class ShareButtonService {
           }
         }
       })
+    } else {
+      // visible id is always 0 of stream layer which is one and only layer of it's group AND is visible
+      if (item.visible && item.layer.type === 'stream') {
+        this.visibleLayers.visibilityIds[item.layer.id].push(0);
+      }
     }
   }
 

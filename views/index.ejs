@@ -3,28 +3,25 @@
   <head>
 	  <title><%= oembedTitle %></title>
 	  <meta charset="UTF-8" />
-	  <meta name="viewport" content="width=device-width, initial-scale=1" />
-	  <meta name="description" content="<%= oembedDescription %>" />
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"  />
+    <meta name="description" content="<%= oembedDescription %>" />
+    <% if(noIndex){ %>
+    <meta name="robots" content="noindex" />
+    <% } %>
 		<meta property="og:type" content="website" />
 		<meta property="og:title" content="<%= oembedTitle %>" />
 		<meta property="og:description" content="<%= oembedDescription %>" />
 		<meta property="og:image" content="<%= oembedImg %>" />
-		<!-- <meta name="robots" content="noindex, nofollow" /> -->
 	  <link rel="shortcut icon" type="image/ico" href="app/img/favicon.ico" />
 	  <link rel="alternate" type="application/json+oembed" href="<%= oembedUrl %>">
 	  <base href="/">
-	  <link rel="stylesheet" href="https://esri.github.io/calcite-maps/dist/css/calcite-maps-bootstrap.min-v0.3.css">
-	  <!-- Calcite Maps -->
-	  <link rel="stylesheet" href="https://esri.github.io/calcite-maps/dist/css/calcite-maps-arcgis-4.x.min-v0.3.css">
-	  <link rel="stylesheet" href="arcgis_js_api/library/4.5/esri/css/main.css">
-	  <link href="app/styles/indigo-pink.css" rel="stylesheet">
+		<link rel="stylesheet" href="https://js.arcgis.com/4.5/esri/css/main.css">
 	  <link rel="stylesheet" href="app/fonts/font-awesome.min.css">
-	 	<link rel="stylesheet" href="../dist/main.eb4c0b177c32ad8cf98c.css">
+	 	<link rel="stylesheet" href="../dist/main.[hash].css">
 	  <!-- Configure and load ESRI libraries -->
     <script >
       window.dojoConfig = {
         has: {
-          "esri-featurelayer-webgl": 1,
           "esri-promise-compatibility": 1
         },
         locale: "lt",
@@ -32,11 +29,12 @@
         async: true
       };
     </script>
+	  <!-- <script src="https://js.arcgis.com/4.5/"></script> -->
 		<!-- using local api version in production, solution for Vilnius Municipality network issues -->
     <script src="arcgis_js_api/library/4.5/init.js"></script>
     <!-- Load webpack bundles with specific hash-->
     <script async >
-      require(["../dist/vendor.bundle.ad6b6da3149ec2bafda3.js", "../dist/main.bundle.6f99431f2c0db370bd0c.js"], function (vendor, main) {});
+      require(["../dist/vendor.bundle.[hash].js", "../dist/main.bundle.[hash].js"], function (vendor, main) {});
     </script>
   </head>
   <body class="calcite">

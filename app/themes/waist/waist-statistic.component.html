@@ -1,0 +1,62 @@
+<span [ngStyle]="{'margin-left': '10px','font-weight': '400'}">{{ content.graphic.attributes.Konteinerio_gatve }} {{ content.graphic.attributes.Konteinerio_namas }} / Konteinerio nr.: {{ content.graphic.attributes.Konteinerio_Nr }}</span>
+
+<!-- Išvežta pagal grafiką -->
+<ng-container *ngIf="content.graphic.attributes.Svoris_kg && content.graphic.attributes.Veluojama">
+  <ul class="flex-container">
+    <li class="flex-item"><p class="waist-stat__count"><span class="waist-stat__name">Išvežtas atliekų kiekis</span><span [countUp]="parseAmount()" [options]="{decimalPlaces: 2}" (complete)="doSomethingOnComplete()">0</span> kg</p>
+    </li>
+    <li class="flex-item"><p><span class="waist-stat__name">Vežėjas</span> {{ content.graphic.attributes.Vezejas }}</p></li>
+    <li class="flex-item"> <p><span class="waist-stat__name">Išvežimo data</span> {{ content.graphic.attributes.Pakelimo_data_laikas_V_short }}</p></li>
+    <li class="flex-item">  <p><span class="waist-stat__name waist-stat__name--next">Sekantis išvežimas</span> {{ nextDay }}</p></li>
+  </ul>
+</ng-container>
+
+<!-- Išvežta, bet vėluota -->
+<ng-container *ngIf="content.graphic.attributes.Svoris_kg && content.graphic.attributes.Veluojama === 0">
+  <ul class="flex-container">
+    <li class="flex-item"><p class="waist-stat__count  waist-stat--late"><span class="waist-stat__name">Išvežtas atliekų kiekis</span><span [countUp]="parseAmount()" [options]="{decimalPlaces: 2}" (complete)="doSomethingOnComplete()">0</span> kg (Vėluota)</p>
+    </li>
+    <li class="flex-item"><p><span class="waist-stat__name">Vežėjas</span> {{ content.graphic.attributes.Vezejas }}</p></li>
+    <li class="flex-item"> <p><span class="waist-stat__name">Išvežimo data</span> {{ content.graphic.attributes.Pakelimo_data_laikas_V_short }}</p></li>
+    <li class="flex-item">  <p><span class="waist-stat__name waist-stat__name--next">Sekantis išvežimas</span> {{ nextDay }}</p></li>
+  </ul>
+</ng-container>
+
+<!-- Ne pagal grafiką -->
+<ng-container *ngIf="content.graphic.attributes.Svoris_kg && content.graphic.attributes.Veluojama === null">
+  <ul class="flex-container">
+    <li class="flex-item"><p class="waist-stat__count  waist-stat--late"><span class="waist-stat__name">Išvežtas atliekų kiekis</span><span [countUp]="parseAmount()" [options]="{decimalPlaces: 2}" (complete)="doSomethingOnComplete()">0</span> kg</p>
+    </li>
+    <li class="flex-item"><p><span class="waist-stat__name">Vežėjas</span> {{ content.graphic.attributes.Vezejas }}</p></li>
+    <li class="flex-item"> <p><span class="waist-stat__name">Išvežimo data</span> {{ content.graphic.attributes.Pakelimo_data_laikas_V_short }}</p></li>
+    <li class="flex-item">  <p><span class="waist-stat__name waist-stat__name--next">Sekantis išvežimas</span> {{ nextDay }}</p></li>
+  </ul>
+</ng-container>
+
+<!-- Vėluojama -->
+<ng-container *ngIf="content.graphic.attributes.Veluojama === 0 && !content.graphic.attributes.Svoris_kg">
+  <ul class="flex-container">
+    <li class="flex-item"><p class="waist-stat__alert"><span class="waist-stat__name">Statusas</span> Vėluojama </p></li>
+    <li class="flex-item"><p><span class="waist-stat__name">Vežėjas</span> {{ content.graphic.attributes.Vezejas }}</p>
+    </li>
+    <li class="flex-item"><p><span class="waist-stat__name">Planuota išvežimo data</span> {{ content.graphic.attributes.Planas_dienai }}</p>
+    </li>
+    <li class="flex-item">  <p><span class="waist-stat__name waist-stat__name--next">Sekantis išvežimas</span> {{ nextDay }}</p>
+    </li>
+  </ul>
+
+</ng-container>
+
+<!-- Laukiama išvežimo -->
+<ng-container *ngIf="content.graphic.attributes.Veluojama === null && !content.graphic.attributes.Pakelimo_data_laikas_V_short">
+  <ul class="flex-container">
+    <li class="flex-item"><p class="waist-stat"><span class="waist-stat__name">Statusas</span> Laukiama </p>
+    </li>
+    <li class="flex-item"><p><span class="waist-stat__name">Vežėjas</span> {{ content.graphic.attributes.Vezejas }}</p>
+    </li>
+    <li class="flex-item"><p><span class="waist-stat__name">Artimiausias išvežimas</span> {{ nextDay}}</p>
+    </li>
+    <li class="flex-item">-</li>
+  </ul>
+</ng-container>
+

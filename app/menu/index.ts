@@ -16,3 +16,8 @@ export { ProfileToolContainerComponent } from './tools/profile/profile-tool-cont
 export { ProfileContainerComponent } from './tools/profile/profile-container.component'; // re-export the named thing
 export { ProfileElevationComponent } from './tools/profile/profile-elevation.component'; // re-export the named thing
 export { PrintMapComponent } from './tools/print/print-map.component'; // re-export the named thing
+export { SwipeToolComponent } from './tools/swipe/swipe-tool.component'; // re-export the named thing
+export { SwipeToolContainerComponent } from './tools/swipe/swipe-tool-container.component'; // re-export the named thing
+export { SwipeContainerComponent } from './tools/swipe/swipe-container.component'; // re-export the named thing
+export { DwgComponent } from './tools/dwg/dwg.component'; // re-export the named thing
+export { DwgContainerComponent } from './tools/dwg/dwg-container.component'; // re-export the named thing

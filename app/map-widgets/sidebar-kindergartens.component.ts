@@ -18,7 +18,7 @@ import FeatureSet = require('esri/tasks/support/FeatureSet');
 @Component({
   selector: 'sidebar-kindergartens',
   templateUrl: './app/map-widgets/sidebar-kindergartens.component.html',
-  styleUrls: ['./app/map-widgets/sidebar.component.css'],
+  styleUrls: ['./app/map-widgets/sidebar.component.scss'],
   animations: [
     trigger('innerSidebarState', [
       state('s-close', style({

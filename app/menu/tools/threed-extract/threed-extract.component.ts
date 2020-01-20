@@ -51,7 +51,9 @@ export class ThreeDExtractComponent implements AfterViewInit {
 
   closeMeasure() {
     this.toolActive = false;
-    this.s.unsubscribe();
+		if (this.s) {
+			this.s.unsubscribe();
+		}
 
     //  detach changes detection
     // and last time detect changes when closing tool

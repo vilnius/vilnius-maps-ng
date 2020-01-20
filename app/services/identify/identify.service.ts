@@ -11,6 +11,8 @@ import all = require("dojo/promise/all");
 
 @Injectable()
 export class IdentifyService {
+	// dojo events
+	mapClickEvent: any;
 
   constructor(
     private mapService: MapService,
@@ -27,7 +29,7 @@ export class IdentifyService {
   }
 
   //identify dafault theme layers
-  identifyLayers(view) {
+  identifyLayers(view,layerOption = 'all', specialLayer = '') {
     const identifyParams = this.identifyParams();
     view.popup.dockOptions = {
       position: 'bottom-left'
@@ -52,24 +54,35 @@ export class IdentifyService {
       identifyParams.tolerance = 10;
       identifyParams.width = view.width;
       identifyParams.height = view.height;
-      identifyParams.layerOption = 'all';
-
+      identifyParams.layerOption = layerOption;
+ 
+			let identificationLayers: any[]
       //foreach item execute task
-      view.layerViews.items.forEach(item => {
+			if (specialLayer === 'quarters') {
+				identificationLayers = this.mapService.returnMap().findLayerById('quarters').sublayers.items.sort((a, b) => a.id - b.id);
+			} else if (specialLayer === 'waist') {
+				identificationLayers = this.mapService.returnMap().findLayerById('atliekos').sublayers.items.sort((a, b) => a.id - b.id);
+			} else {
+				identificationLayers = view.layerViews.items
+			}
+      identificationLayers.forEach(item => {
         // do not execute if layer is for buffer graphics and if layer is GroupLayer with list mnode 'hide-children' or type is group which means it is dedicated for retrieving data to custom sidebar via feature layer hitTest method
         // skip FeatureSelection layer as well wich is created only for Feature selection graphics
 				// TODO remove or refactor allLayers identification
-        if ((item.layer.id !== "bufferPolygon") && (item.layer.id !== "allLayers_") && (!suspended) && (item.layer.listMode !== 'hide-children') && (item.layer.type !== 'group') && (item.layer.id !== 'FeatureSelection') && (item.layer.id !== 'AreaSelection') && (item.layer.popupEnabled)) {
+        if ((item.layer.id !== "bufferPolygon") && (item.layer.id !== "allLayers_") && (!suspended) && (item.layer.listMode !== 'hide-children') && (item.layer.type !== 'group' ) && item.layer.type !== 'stream' && (item.layer.id !== 'FeatureSelection') && (item.layer.id !== 'AreaSelection') && (item.layer.popupEnabled) && item.visible) {
+          console.log(item.layer.title)
           //if layer is buffer result, add custom visibility
           if (item.layer.id === "bufferLayers") {
             identifyParams.layerIds = [0];
+          } else if (specialLayer === 'quarters') {
+            identifyParams.layerIds = [item.id];
+          } else if (specialLayer === 'waist') {
+            identifyParams.layerIds = [item.id];
           } else {
             identifyParams.layerIds = [visibleLayersIds[item.layer.id]];
           }
-
+          
           let defferedList = this.identify(item.layer.url).execute(identifyParams).then((response) => {
-            //console.log("RSP", response);
-            //console.log("ids",ids);
             let results = response.results.reverse();
             return results.map((result) => {
               let name = result.layerName;
@@ -83,7 +96,6 @@ export class IdentifyService {
               return feature;
             });
           }).then(function(response) {
-            //console.log('response', response)
             return response;
           }, (error) => { console.error(error); });
 
@@ -95,8 +107,7 @@ export class IdentifyService {
       //using dojo/promise/all function that takes multiple promises and returns a new promise that is fulfilled when all promises have been resolved or one has been rejected.
       all(def).then(function(response) {
         let resultsMerge = [].concat.apply([], response.reverse()); //merger all results
-        //console.log('response resultsMerge', resultsMerge)
-        //remove emtpy Values
+        //remove empty Values
         resultsMerge = resultsMerge.filter((value) => value);
         if (resultsMerge.length > 0) {
           view.popup.open({
@@ -107,23 +118,16 @@ export class IdentifyService {
       });
 
     }, (error) => { console.error(error); });
-    //TODO REMOVE
-    // if (!window.esriMap) {
-    // 	window.esriMap = [];
-    // 	window.mapClickEvent = {};
-    // 	window.mapClickEvent[Math.random()] = mapClickEvent
-    // 	window.mapClickEvent[Math.random()] = view
-    // 	window.mapClickEvent[Math.random()] = map
-    // 	window.esriMap.push(mapClickEvent);
-    // } else {
-    // 		window.esriMap.push(mapClickEvent);
-    // 		window.mapClickEvent[Math.random()] = mapClickEvent
-    // 		window.mapClickEvent[Math.random()] = view
-    // 		window.mapClickEvent[Math.random()] = map
-    // }
 
-    return mapClickEvent;
+    return this.mapClickEvent = mapClickEvent;
   }
+
+	removeEvent() {
+		if (this.mapClickEvent) {
+			this.mapClickEvent.remove();
+		}
+
+	}
 
   showItvPopupOnCLick(view: any, event: any, identify: any, identifyParams: any) {
     identifyParams.geometry = event.mapPoint;

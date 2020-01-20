@@ -80,7 +80,7 @@ export class MapDefaultService {
         )) { //add layers attributes that you do not want to show
           //AG check for date string
           if (this.isValidDate(attributes[resultAtr], reg)) {
-            let attributeDate = attributes[resultAtr];
+            let attributeDate = attributes[resultAtr]; 
             content += "<p><span>" + resultAtr + "</br></span>" + attributes[resultAtr].replace(reg, '$1-$2-$3') + "<p>";
           } else {
             var attributeResult = attributes[resultAtr];
@@ -88,12 +88,13 @@ export class MapDefaultService {
               if ((attributeResult === " ") || (attributeResult === "Null")) {
                 attributeResult = "-";
               }
+
             } else {
               attributeResult = "-";
             }
             //check if url contains http or https  + :// string with regex, TODO refactor
             if (attributeResult.match("^https?://", "i")) {
-              content += `<p><span>${resultAtr}</br></span><a href='${attributeResult}' target='_blank'>${attributeResult}</a><p>`;
+              content += `<p><span>${resultAtr}</br></span><a href='${attributeResult}' rel="noopener noreferrer" target='_blank'>Nuoroda</a><p>`;
             } else {
               content += "<p><span>" + resultAtr + "</br></span>" + attributeResult + "<p>";
             }

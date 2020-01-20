@@ -20,17 +20,41 @@ function addDefaultRoutes() {
 
 addDefaultRoutes();
 
-const MAP_ROUTES: Routes = [
+let mapRoutes: Routes = [
   { path: '', pathMatch: 'full', component: ThemesComponent },
   { path: '', component: MapViewComponent, children: [
 		{ path: 'darzeliai', loadChildren: './themes/kindergartens/kindergartens.module#KindergartensModule' },
 		{ path: 'projektai', loadChildren: './themes/projects/projects.module#ProjectsModule' },
 		{ path: 'pastatai', loadChildren: './themes/buildings/buildings.module#BuildingsModule' },
-		...defaultThemesRoutes,
-	]},
-  //add page not found component (only in development)
-  // using expressjs in production mode and redirecting to home page
-  { path: '**', component: NotFoundComponent }
-];
+    { path: 'kvartaline-renovacija', redirectTo: 'pastatai' }
+  ]}
+]; 
 
-export const Routing = RouterModule.forRoot(MAP_ROUTES);
+// add development routes
+if (process.env.NODE_ENV !== 'production') {
+  mapRoutes[1] = { 
+    path: '', component: MapViewComponent, children: [
+      ...mapRoutes[1].children,
+      { path: 'atlieku-tvarkymas', loadChildren: './themes/waist/waist.module#WaistModule' }
+      // { path: 'kvartaline-renovacija', loadChildren: './themes/quarters/quarters.module#QuartersModule' }
+    ]
+  };
+ 
+}
+
+// add rest routes
+mapRoutes[1] = { 
+  path: '', component: MapViewComponent, children: [
+    ...mapRoutes[1].children,
+    ...defaultThemesRoutes
+  ]
+};
+
+mapRoutes = [
+  ...mapRoutes,
+  // add page not found component (only in development)
+  // using expressjs in production mode and redirecting to home page
+  { path: '**', component: NotFoundComponent } 
+] 
+
+export const Routing = RouterModule.forRoot(mapRoutes);

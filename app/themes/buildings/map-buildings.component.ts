@@ -12,6 +12,7 @@ import { BasemapsService } from '../../map-widgets/basemaps.service';
 import { ViewService } from '../default/view.service';
 import { ShareButtonService } from '../../services/share-button.service';
 import { IdentifyService } from '../../services/identify/identify.service';
+import { MapOptions } from '../../options';
 
 import { Subscription } from 'rxjs';
 
@@ -189,10 +190,7 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
     // add tooltip on mouse move
     // TODO remove event on destroy
     const rend = this.renderer2;
-    const [tooltipEvent, tooltip] = this.buildingsTooltipService.addTooltip(view, this.view, mainContainerDom, rend);
-
-    this.tooltipEvent = tooltipEvent;
-    this.tooltip = tooltip;
+    this.buildingsTooltipService.addTooltip(view, this.view, mainContainerDom, rend);
 
     this.cdr.detectChanges();
 
@@ -219,21 +217,46 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
 
     view.hitTest(screenPoint)
       .then(features => {
-        const values = features.results[0];
-        const showResult = values.graphic;
-        this.openSidebar();
-        this.heatContent = showResult.attributes;
+        // AD HOC condition logic
+        // we should always select 2 features (buildings and quarters  which are under the same layer checkbox)
+        // we'd check if first value has address atribute (in case we hitting quarters layer and selected quarter layer with results length === 2)
+        // * ------ *
+        // TODO remove dublication of buildings selected feature when hitting buildings selection graphic
+        if  (features.results.length !== 1 && features.results[0].graphic.attributes.ADRESAS) {
+          const showResult = features.results[0].graphic;
+          const showResultQuarters = features.results[1].graphic;
+          this.openSidebar();
+          this.heatContent = {...showResult.attributes, ...showResultQuarters.attributes};
 
-        //add selectionResultsToGraphic
-        const groupFeatureSelectionLayer = this._mapService.initFeatureSelectionGraphicLayer('FeatureSelection', showResult.layer.maxScale, showResult.layer.minScale, 'hide');
-        const { geometry, layer, attributes } = showResult;
-        const selectionGraphic = this._mapService.initFeatureSelectionGraphic('polygon', geometry, layer, attributes);
-        groupFeatureSelectionLayer.graphics.add(selectionGraphic);
-        this.map.add(groupFeatureSelectionLayer);
+          //add selectionResultsToGraphic
+          this.addSelection(showResultQuarters, [21, 96, 2013]);
+          this.addSelection(showResult);
+  
+          // check this view and its children
+          this.cdr.detectChanges();
+        } else {
+          // zoom if only quarters layer was hit
+          if (view.zoom < 4) {
+            const params = {
+              x: features.results[0].graphic.geometry.centroid.x,
+              y: features.results[0].graphic.geometry.centroid.y,
+              zoom: 4
+            }
 
-        // check this view and its children
-        this.cdr.detectChanges();
+            this._mapService.goTo(view, params);
+          }
+
+        }
+
       });
+  }
+
+  addSelection(results, outlineColor=[181, 14, 18, 1]): void {
+    const groupFeatureSelectionLayer = this._mapService.initFeatureSelectionGraphicLayer('FeatureSelection', results.layer.maxScale, results.layer.minScale, 'hide');
+    const { geometry, layer, attributes } = results;
+    const selectionGraphic = this._mapService.initFeatureSelectionGraphic('polygon', geometry, layer, attributes, undefined, undefined, outlineColor);
+    groupFeatureSelectionLayer.graphics.add(selectionGraphic);
+    this.map.add(groupFeatureSelectionLayer);
   }
 
   ngOnInit() {
@@ -245,8 +268,8 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
         return this.queryParams = queryParam;
       }
     );
-    this.queryUrlSubscription.unsubscribe();
 
+    this.queryUrlSubscription.unsubscribe();
     this.renderer2.addClass(document.body, 'buldings-theme');
 
     //add snapshot url and pass path name ta Incetable map service
@@ -255,7 +278,7 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
     let snapshotUrl = { path: 'pastatai' };
 
     //add sidebar names
-    this.sidebarTitle = 'Šilumos suvartojimas';
+    this.sidebarTitle = MapOptions.themes.buildings.name;
 
     // return the map
     this.map = this._mapService.returnMap();
@@ -263,9 +286,6 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
     // return view
     this.view = this._mapService.getView();
 
-    //create theme main layers grouped
-    // FIXME seem to bee obsolete
-    //this._mapService.initGroupLayer("theme-group", "Main theme layers", "show");
 
     // set active basemaps based on url query params
     if (this.queryParams.basemap) {
@@ -312,13 +332,10 @@ export class MapBuildingsComponent implements OnInit, OnDestroy {
       this.view.popup.close();
     }
 
-    // dojo on remove event handler
-    this.identifyEvent.remove();
-    this.tooltipEvent.remove();
+		// dojo on remove event handler
+		this.identify.removeEvent();
+		this.buildingsTooltipService.clearMemoryAndNodes(this.renderer2);
     this.clickEvent.remove();
-
-    // destroy tooltip dom
-    this.tooltip.remove();
 
     //remove theme layers, exclude allLayers (JS API performance BUG)
     this.map.removeAll();

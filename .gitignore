@@ -43,3 +43,12 @@ iframely
 
 # arcgis js api
 arcgis_js_api
+
+# DS_Store files
+.DS_Store
+
+# ignore server.js file in root, which is for testing only
+server.js
+
+# dotenv
+.env

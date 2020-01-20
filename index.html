@@ -1,60 +1,59 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Vilniaus miesto interaktyvūs žemėlapiai</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Vilniaus miesto savivaldybės interaktyvūs žemėlapiai">
-    <link rel="shortcut icon" type="image/ico" href="/app/img/favicon.ico">
-    <base href="/">
-		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-		<link rel="stylesheet" href="https://esri.github.io/calcite-maps/dist/css/calcite-maps-bootstrap.min-v0.3.css">
-		<link rel="stylesheet" href="https://esri.github.io/calcite-maps/dist/css/calcite-maps-arcgis-4.x.min-v0.3.css">
-    <!-- Development -->
-    <link rel="stylesheet" href="https://js.arcgis.com/4.5/esri/css/main.css">
-    <!-- Production -->
-    <!-- <link rel="stylesheet" href="arcgis_js_api/library/4.5/esri/css/main.css"> -->
-		<link href="app/styles/indigo-pink.css" rel="stylesheet">
-		<link rel="stylesheet" href="app/fonts/font-awesome.min.css">
-		<link rel="stylesheet" href="app/styles/page.css">
-		<link rel="stylesheet" href="app/styles/main.css">
-		<link rel="stylesheet" href="app/styles/normalize.css">
-    <!-- Configure and load ESRI libraries -->
-    <script >
-      window.dojoConfig = {
-        has: {
-          "esri-featurelayer-webgl": 1,
-          "esri-promise-compatibility": 1
-        },
-        locale: "lt",
-        parseOnLoad: true,
-        async: true
-      };
-    </script>
-    <!-- <script src="https://js.arcgis.com/4.6/"></script> -->
-		<!-- Development -->
-    <script src="https://js.arcgis.com/4.5/"></script>
-		<!-- Production -->
-    <!-- <script src="arcgis_js_api/library/4.5/init.js"></script> -->
-    <!-- Load webpack bundles-->
-    <script async >
-      require(["/dist/vendor.bundle.js", "/dist/main.bundle.js"], function (vendor, main) {});
-    </script>
-  </head>
 
-  <!-- Display the application -->
-  <body class="calcite">
+<head>
+	<title>Vilniaus miesto interaktyvūs žemėlapiai</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+	<meta name="description" content="Vilniaus miesto savivaldybės interaktyvūs žemėlapiai">
+	<link rel="shortcut icon" type="image/ico" href="/app/img/favicon.ico">
+	<base href="/">
+	<!-- Development -->
+	<link rel="stylesheet" href="https://js.arcgis.com/4.5/esri/css/main.css">
+	<link rel="stylesheet" href="app/fonts/font-awesome.min.css">
+	<link rel="stylesheet" href="app/styles/page.css">
+	<!-- <link rel="stylesheet" href="https://esri.github.io/calcite-maps/dist/css/calcite-maps-bootstrap.min-v0.3.css">
+	<link rel="stylesheet" href="https://esri.github.io/calcite-maps/dist/css/calcite-maps-arcgis-4.x.min-v0.3.css">
+	<link href="app/styles/sass/@angular/material/prebuilt-themes/indigo-pink.css" rel="stylesheet">
+	<link rel="stylesheet" href="app/styles/main.css">
+	<link rel="stylesheet" href="app/styles/normalize.css"> -->
+	<!-- Production -->
+	<!-- <link rel="stylesheet" href="arcgis_js_api/library/4.5/esri/css/main.css"> -->
+	<!-- Configure and load ESRI libraries -->
+	<script>
+		window.dojoConfig = {
+			has: {
+				//"esri-featurelayer-webgl": 1,
+				"esri-promise-compatibility": 1
+			},
+			locale: "lt",
+			parseOnLoad: true,
+			async: true
+		};
+	</script>
+	<!-- Development -->
+	<script src="https://js.arcgis.com/4.5/"></script>
+	<!-- Production -->
+	<!-- <script src="arcgis_js_api/library/4.5/init.js"></script> -->
+	<!-- Load webpack bundles-->
+	<script defer>
+		require(["/dist/vendor.bundle.js", "/dist/main.bundle.js"], function(vendor, main) {});
+	</script>
+</head>
+<!-- Display the application -->
 
-    <vilnius-maps>
-        <div id="loading-gif">
-          <div class="showbox">
-            <div class="loader">
-            <svg class="circular" viewBox="25 25 50 50">
+<body class="calcite">
+	<vilnius-maps>
+		<div id="loading-gif">
+			<div class="showbox">
+				<div class="loader">
+					<svg class="circular" viewBox="25 25 50 50">
               <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"/>
             </svg>
-            </div>
-          </div>
-        </div>
-      </vilnius-maps>
-  </body>
+				</div>
+			</div>
+		</div>
+	</vilnius-maps>
+</body>
+
 </html>

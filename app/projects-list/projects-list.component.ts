@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ElementRef, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ElementRef, OnInit, OnDestroy, NgZone, ChangeDetectionStrategy } from '@angular/core';
 
 import { MapService } from '../map.service';
 import { FeatureQueryService } from '../query/feature-query.service';
@@ -18,7 +18,8 @@ import all = require("dojo/promise/all");
     '(document:click)': 'handleClick($event)',
   },
   providers: [ProjectsFilterService],
-  templateUrl: './app/projects-list/projects-list.component.html'
+  templateUrl: './app/projects-list/projects-list.component.html',
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class ProjectsListComponent implements OnInit, OnDestroy {
@@ -64,26 +65,58 @@ export class ProjectsListComponent implements OnInit, OnDestroy {
     };
   })();
 
-  constructor(myElement: ElementRef, private _mapService: MapService, private filterThemes: FeatureQueryService, private projectsFilter: ProjectsFilterService, private projectsListService: ProjectsListService, private identify: IdentifyService, private pointAddRemoveService: PointAddRemoveService) {
+  constructor(
+    myElement: ElementRef,
+    private _mapService: MapService,
+    private filterThemes: FeatureQueryService,
+    private ngZone: NgZone,
+    private projectsFilter: ProjectsFilterService,
+    private projectsListService: ProjectsListService,
+    private identify: IdentifyService,
+    private pointAddRemoveService: PointAddRemoveService) {
     this.elementRef = myElement;
     this.selectedIdx = -1;
   }
 
+	ngOnInit() {
+		// get full list binding and then proceed
+		// set projetcs unique final years for filtering
+		// Observable unsubscribes with first operator
+		this.projectsListService.fullListItem.subscribe(fullList => {
+			this.fullList = fullList;
+			this.projectsFinalYears = this.projectsFilter.getUniqueAttributeSubStr(fullList, "Igyvend_IKI", 4);
+
+			//filter by TemaID
+			this.projectsThemes = this.projectsFilter.getUniqueAttribute(fullList, "TemaID");
+
+			//send years and themes array to Map object in feature query service
+			this.filterThemes.sendToMap(this.projectsFinalYears, this.projectsThemes);
+
+			//set active class on init
+			this.activeTheme = this.filterThemes.getFilterStatusTheme();
+			this.activeYear = this.filterThemes.getFilterStatusYear();
+		}
+		);
+	}
+
   //activate word or map list item
   activateList(e = null, listName: string = null) {
-    if (listName === "word") {
-      this.wordListActive = e.target.id;
-      //deactivate mapListActive
-      this.mapListActive = null;
-    } else if (listName === "map") {
-      this.mapListActive = e.target.id;
-      //deactivate wordListActive
-      this.wordListActive = null;
-    } else {
-      //deactivate list selection
-      this.wordListActive = null;
-      this.mapListActive = null;
-    }
+		this.ngZone.run(() => {
+			if (listName === "word") {
+				this.wordListActive = e.target.id;
+				//deactivate mapListActive
+				this.mapListActive = null;
+			} else if (listName === "map") {
+				this.mapListActive = e.target.id;
+				//deactivate wordListActive
+				this.wordListActive = null;
+			} else {
+				//deactivate list selection
+				this.wordListActive = null;
+				this.mapListActive = null;
+			}
+		});
+
   }
 
   //getactivatedListName
@@ -127,100 +160,100 @@ export class ProjectsListComponent implements OnInit, OnDestroy {
 
   // list item identify
   identifyAttributes(project: any) {
-    let query = this.projectsListService.Query();
-    let queryTask = this.projectsListService.QueryTask(MapOptions.themes.itvTheme.layers.uniqueProjects + "/0");
+			let query = this.projectsListService.Query();
+	    let queryTask = this.projectsListService.QueryTask(MapOptions.themes.itvTheme.layers.uniqueProjects + "/0");
 
-    // remove any selection layers
-    this.removeSelectionLayers();
+	    // remove any selection layers
+	    this.removeSelectionLayers();
 
-    // TODO remove old graphic if exists
-    this.view.graphics.items = [];
-    query.where = "UNIKALUS_NR=" + project.attributes.UNIKALUS_NR;
-    query.outFields = ["*"];
-    query.returnGeometry = true;
-    queryTask.execute(query).then(this.queryTaskExecution.bind(this, project), (err) => console.log(err))
+	    // TODO remove old graphic if exists
+	    this.view.graphics.items = [];
+	    query.where = "UNIKALUS_NR=" + project.attributes.UNIKALUS_NR;
+	    query.outFields = ["*"];
+	    query.returnGeometry = true;
+	    queryTask.execute(query).then(this.queryTaskExecution.bind(this, project), (err) => console.warn(err))
   }
 
-	queryTaskExecution(project, results) {
-		let projectsDynamicLayer = this._mapService.getProjectsDynamicLayer()
-		// store all deffered objects of identify task in def array
-		let def: IPromise<any>[] = [];
-		let identifyParams = this.identify.identifyParams();
-		let geometry = results.features["0"].geometry;
+  queryTaskExecution(project, results) {
+    let projectsDynamicLayer = this._mapService.getProjectsDynamicLayer()
+    // store all deffered objects of identify task in def array
+    let def: IPromise<any>[] = [];
+    let identifyParams = this.identify.identifyParams();
+    let geometry = results.features["0"].geometry;
 
-		identifyParams.geometry = geometry;
-		identifyParams.mapExtent = this.view.extent;
-		identifyParams.tolerance = 10;
-		identifyParams.width = this.view.width;
-		identifyParams.height = this.view.height;
-		identifyParams.layerOption = 'visible';
-		identifyParams.returnGeometry = true;
+    identifyParams.geometry = geometry;
+    identifyParams.mapExtent = this.view.extent;
+    identifyParams.tolerance = 10;
+    identifyParams.width = this.view.width;
+    identifyParams.height = this.view.height;
+    identifyParams.layerOption = 'visible';
+    identifyParams.returnGeometry = true;
 
-		let defferedList = this.filterThemes.identifyProjects(projectsDynamicLayer, identifyParams, this.map, this.view, project.attributes.UNIKALUS_NR)
-			.then((response) => {
-				this.activateListItem(response);
-				return response;
-			}, (error) => { console.error(error); });
+    let defferedList = this.filterThemes.identifyProjects(projectsDynamicLayer, identifyParams, this.map, this.view, project.attributes.UNIKALUS_NR)
+      .then((response) => {
+        this.activateListItem(response);
+        return response;
+      }, (error) => { console.error(error); });
 
-		def.push(defferedList);
+    def.push(defferedList);
 
-		// TODO consider removing promise all, as we do not need it so far, we will get only one response, not using any other service idintification in projects theme so far.
-		// using dojo/promise/all function that takes multiple promises and returns a new promise that is fulfilled when all promises have been resolved or one has been rejected.
-		all(def).then(this.creatPopupWithListItems.bind(this));
+    // TODO consider removing promise all, as we do not need it so far, we will get only one response, not using any other service idintification in projects theme so far.
+    // using dojo/promise/all function that takes multiple promises and returns a new promise that is fulfilled when all promises have been resolved or one has been rejected.
+    all(def).then(this.creatPopupWithListItems.bind(this));
 
-		this.createPopup(results, project);
-	}
+    this.createPopup(results, project);
+  }
 
-	creatPopupWithListItems(response) {
-		let resultsMerge = [].concat.apply([], response.reverse()); // merge all results
-		// filter empty response again (just in case) which was received after map method
-		resultsMerge = resultsMerge.filter(res => res);
-		this.pointAddRemoveService.pointItem.subscribe(point => {
-			if (resultsMerge.length > 0) {
-				this.view.goTo({
-					target: point
-				}, MapOptions.animation.options);
-				this.view.popup.open({
-					features: resultsMerge,
-					location: point
-				});
-			}
+  creatPopupWithListItems(response) {
+    let resultsMerge = [].concat.apply([], response.reverse()); // merge all results
+    // filter empty response again (just in case) which was received after map method
+    resultsMerge = resultsMerge.filter(res => res);
+    this.pointAddRemoveService.pointItem.subscribe(point => {
+      if (resultsMerge.length > 0) {
+        this.view.goTo({
+          target: point
+        }, MapOptions.animation.options);
+        this.view.popup.open({
+          features: resultsMerge,
+          location: point
+        });
+      }
 
-		});
-	}
+    });
+  }
 
-	activateListItem(response) {
-		// filter empty response which was received after map method
-		let responseMerge = response.filter(res => res);
-		let currentFilterName: String = this.projectsListService.getFilterListName();
-		this.activateListByID(parseInt(responseMerge["0"].attributes.UNIKALUS_NR), currentFilterName);
-	}
+  activateListItem(response) {
+    // filter empty response which was received after map method
+    let responseMerge = response.filter(res => res);
+    let currentFilterName: String = this.projectsListService.getFilterListName();
+    this.activateListByID(parseInt(responseMerge["0"].attributes.UNIKALUS_NR), currentFilterName);
+  }
 
-	createPopup(results, project) {
-		// count found attributes, a in mxds we are using same layer but with different scale
-		let countFoundAttributes: number = 0;
+  createPopup(results, project) {
+    // count found attributes, a in mxds we are using same layer but with different scale
+    let countFoundAttributes: number = 0;
 
-		let pointXY: number[];
+    let pointXY: number[];
 
-		// init popup
-		if ((results.geometryType === "point") && (results.features["0"].attributes.UNIKALUS_NR === project.attributes.UNIKALUS_NR)) {
+    // init popup
+    if ((results.geometryType === "point") && (results.features["0"].attributes.UNIKALUS_NR === project.attributes.UNIKALUS_NR)) {
 
-			if (countFoundAttributes === 0) {
-				pointXY = this.getPointXY(results);
-				//clear popup
-				this.view.popup.clear();
-				this.view.popup.visible = false;
+      if (countFoundAttributes === 0) {
+        pointXY = this.getPointXY(results);
+        //clear popup
+        this.view.popup.clear();
+        this.view.popup.visible = false;
 
-				//change popup position
-				this.view.popup.dockEnabled = true;
-				this.view.popup.position = 'bottom-center';
-				this.initPopup(results, pointXY);
-				countFoundAttributes += 1;
-			}
+        //change popup position
+        this.view.popup.dockEnabled = true;
+        this.view.popup.position = 'bottom-center';
+        this.initPopup(results, pointXY);
+        countFoundAttributes += 1;
+      }
 
-		}
+    }
 
-	}
+  }
 
   getPointXY(results: any) {
     // get only point coordinates
@@ -261,27 +294,23 @@ export class ProjectsListComponent implements OnInit, OnDestroy {
 
   //get radio button value on selection
   change(e) {
-    this.mainFilterCheck = e.target.value;
-    this.projectsListService.setFilterListName(e.target.value)
+    this.mainFilterCheck = e.value;
+    this.projectsListService.setFilterListName(e.value)
   }
 
   getList() {
-    //console.log("FEATURES: ", this.projectsListOriginal)
     return this.fullList;
   }
 
   filter(event: any) {
     //add setTimeout and clearTimeout
     this.keyUpDelay(() => {
-      //console.log("EVENTAS: ", event.code)
       if (this.query !== "") {
         this.filteredList = this.getList().filter(function(project) {
           const projectsName = project.attributes.Pavadinimas.toLowerCase();
           return projectsName.indexOf(this.query.toLowerCase()) > -1;
         }.bind(this));
 
-        //console.log(event.target.value)
-        //console.log("SARASAS: ", this.filteredList)
         //emit filter list and input value for additional query task if any additional filtering occurs
         this.onFilter.emit([this.filteredList, event.target.value]);
 
@@ -291,26 +320,21 @@ export class ProjectsListComponent implements OnInit, OnDestroy {
         if (event.code == "ArrowDown" && this.selectedIdx < this.filteredList.length) {
 
           this.selectedIdx++;
-          //console.log(this.selectedIdx);
         } else if (event.code == "ArrowUp" && this.selectedIdx > 0) {
           this.selectedIdx--;
-          //console.log(this.selectedIdx);
         }
       } else {
         this.filteredList = [];
         //emit filter list and input value for additional query task if any additional filtering occurs
-        //console.log("SARASAS: ", this.filteredList)
         this.onFilter.emit([this.filteredList, event.target.value]);
       }
     }, 200);
   }
 
   select(item) {
-    //console.log(item);
     this.query = item;
     this.filteredList = [];
     this.selectedIdx = -1;
-    //this.onFilter.emit(item);
   }
 
   handleBlur() {
@@ -354,27 +378,6 @@ export class ProjectsListComponent implements OnInit, OnDestroy {
   countActivatedFilter() {
     // Objects.values exists as we using es2017 lib (tsconfig.json)
     this.activatedFiltersNumber = Object.values(this.activeYear).reduce((acc, cur) => { !cur ? acc += 1 : acc; return acc; }, 0) + Object.values(this.activeTheme).reduce((acc, cur) => { !cur ? acc += 1 : acc; return acc; }, 0);
-  }
-
-  ngOnInit() {
-    // get full list binding and then proceed
-    // set projetcs unique final years for filtering
-		// Observable unsubscribes with first operator
- 		this.projectsListService.fullListItem.subscribe(fullList => {
-      this.fullList = fullList;
-      this.projectsFinalYears = this.projectsFilter.getUniqueAttributeSubStr(fullList, "Igyvend_IKI", 4);
-
-      //filter by TemaID
-      this.projectsThemes = this.projectsFilter.getUniqueAttribute(fullList, "TemaID");
-
-      //send years and themes array to Map object in feature query service
-      this.filterThemes.sendToMap(this.projectsFinalYears, this.projectsThemes);
-
-      //set active class on init
-      this.activeTheme = this.filterThemes.getFilterStatusTheme();
-      this.activeYear = this.filterThemes.getFilterStatusYear();
-    }
-    );
   }
 
   ngOnDestroy() {
